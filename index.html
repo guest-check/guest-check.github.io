@@ -17,7 +17,7 @@
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,Roboto,Arial,sans-serif}
 header{background:var(--bar);padding:16px;font-size:22px;font-weight:600;display:flex;align-items:center;gap:10px}
 header small{margin-left:auto;font-size:14px;font-weight:400;color:var(--mut)}
-main{padding:12px 12px 230px}
+main{padding:12px 12px 330px}
 .seg{display:flex;gap:8px;margin-bottom:12px}
 .seg button{flex:1;padding:14px 8px;font-size:19px;font-weight:700;border-radius:14px;border:2px solid #666;background:transparent;color:var(--mut)}
 .seg #mIn.on{background:var(--org);border-color:var(--org);color:#fff}
@@ -58,7 +58,13 @@ body.out #sendBtn{background:var(--blue)}
 .empty{color:var(--mut);text-align:center;padding:24px 8px}
 .fbtns{display:flex;gap:8px;margin-top:8px}
 .fbtns button{flex:1;padding:12px 6px;border-radius:12px;border:0;font-size:15px;font-weight:600;background:#333;color:#fff}
-.fbtns #exportBtn{background:#2e7d32}
+.fbtns #badgeBtn{background:#1565c0}
+#xl{margin-top:8px;display:grid;gap:6px}
+.xrow{display:flex;align-items:center;gap:10px;background:#1e1e1e;border:1px solid #333;border-radius:12px;padding:6px 6px 6px 10px;text-align:left;cursor:pointer}
+.xic{width:28px;height:28px;border-radius:6px;background:#1d6f42;color:#fff;font-weight:800;display:grid;place-items:center;font-size:15px;flex:none}
+.xt{flex:1;min-width:0;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xc{font-size:12px;color:var(--mut);white-space:nowrap}
+.xm{width:40px;height:36px;border:0;border-radius:8px;background:#333;color:#fff;font-size:22px;line-height:1;flex:none}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;z-index:30}
 .modal.on{display:flex}
 .modal .box{background:#2a2a2a;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:85vh;overflow:auto}
@@ -152,7 +158,8 @@ footer{position:fixed;left:0;right:0;bottom:0;background:#000;padding:10px 14px 
 <footer>
   <div id="status">Нажмите на камеру, чтобы начать.</div>
   <div id="link">● Проверка…</div>
-  <div class="fbtns"><button id="exportBtn">📤 Скачать Excel</button><button id="clearBtn">🗑 Новый ивент</button></div>
+  <div id="xl"></div>
+  <div class="fbtns"><button id="badgeBtn">🔖 Вернуть бейдж</button><button id="clearBtn">🗑 Новый ивент</button></div>
 </footer>
 
 <div class="modal" id="modal"><div class="box">
@@ -959,6 +966,7 @@ async function saveOut(name){
 async function saveNow(){
   const name = $("text").value.trim().replace(/\s+/g, " ");
   if (!name){ setStatus("Поле пустое: отсканируйте или впишите имя."); return; }
+  if (/^\d{1,6}$/.test(name) && guests.some(g => g.badge)) return returnBadge(name);   // ввели номер бейджа — возврат
   if (mode === "in") await saveIn(name); else await saveOut(name);
 }
 $("sendBtn").addEventListener("click", saveNow);
@@ -1037,6 +1045,7 @@ async function editList(id){
 }
 function render(){
   renderLists();
+  renderXl();
   const isList = tab.startsWith("list:");
   const showLst = isList ? listById(tab.slice(5)) : null;
   if (isList && !showLst) tab = "guest";
@@ -1393,28 +1402,78 @@ async function deliver(x, how){
   setStatus("✅ Сохранено в «Загрузки»: " + x.fname);
   return true;
 }
-$("exportBtn").addEventListener("click", async () => {
-  if (!guests.length && !lists.length){ setStatus("Пусто — нечего выгружать."); return; }
-  const probe = new File([new Blob(["x"])], "t.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-  let how = navigator.canShare && navigator.canShare({ files: [probe] }) ? "share" : "save";
-  const nG = guests.filter(g => recKind(g) === "guest").length, nS = guests.filter(g => recKind(g) === "staff").length;
-  const hasStaff = nS || lists.some(l => l.kind === "staff"), hasGuest = nG || lists.some(l => l.kind === "guest") || !lists.length;
-  const lost = guests.filter(g => g.badge && (g.badgeBack === "НЕТ" || (g.in && !g.out))).length;
-  for (;;){
-    const ic = how === "share" ? "📤 " : "💾 ";
-    const btns = [];
-    if (hasGuest) btns.push({ label: ic + "Гости — " + nG, value: "guest", cls: "main" });
-    if (hasStaff) btns.push({ label: ic + "Сотрудники — " + nS + (lost ? "  (⚠️ бейджей не вернули: " + lost + ")" : ""), value: "staff", cls: "main" });
-    if (hasGuest && hasStaff) btns.push({ label: ic + "Всё в одном файле", value: "all" });
-    if (navigator.canShare) btns.push({ label: how === "share" ? "💾 Сохранять в телефон, а не отправлять" : "📤 Отправлять (Telegram, IMO, почта…)", value: "switch", cls: "plain" });
-    btns.push({ label: "Отмена", value: 0, cls: "plain" });
-    const r = await ask("Скачать Excel", how === "share" ? "Нажмите — и файл сразу откроется для отправки (Telegram, IMO, почта)." : "Нажмите — и файл сохранится в «Загрузки».", btns);
+/* ===== внизу: Excel-файлы «Guest list» и «Vendors check list» с меню ⋮ ===== */
+function renderXl(){
+  const box = $("xl");
+  const hasStaff = lists.some(l => l.kind === "staff") || guests.some(g => g.kind === "staff");
+  const hasGuest = lists.some(l => l.kind === "guest") || guests.some(g => recKind(g) === "guest") || !lists.length;
+  const rows = [];
+  const mk = (kind, title) => {
+    const n = guests.filter(g => (kind === "all" || recKind(g) === kind) && g.in).length;
+    const d = document.createElement("div"); d.className = "xrow";
+    const ic = document.createElement("span"); ic.className = "xic"; ic.textContent = "X";
+    const t = document.createElement("span"); t.className = "xt"; t.textContent = title;
+    const c = document.createElement("span"); c.className = "xc"; c.textContent = "пришло " + n;
+    const m = document.createElement("button"); m.className = "xm"; m.textContent = "⋮"; m.setAttribute("aria-label", "Меню");
+    d.append(ic, t, c, m);
+    d.onclick = () => xlMenu(kind, title);
+    return d;
+  };
+  if (!lists.length && !hasStaff) rows.push(mk("all", "GuestCheck.xlsx"));
+  else {
+    if (hasGuest) rows.push(mk("guest", (lists.find(l => l.kind === "guest") || { file: "Guest list" }).file + ".xlsx"));
+    if (hasStaff) rows.push(mk("staff", (lists.find(l => l.kind === "staff") || { file: "Vendors check list" }).file + ".xlsx"));
+  }
+  box.replaceChildren(...rows);
+  $("badgeBtn").style.display = hasStaff ? "" : "none";
+  requestAnimationFrame(placeFab);
+}
+function placeFab(){
+  const h = document.querySelector("footer").offsetHeight;
+  $("sendBtn").style.bottom = (h + 12) + "px";
+  document.querySelector("main").style.paddingBottom = (h + 100) + "px";
+}
+window.addEventListener("resize", placeFab);
+async function xlMenu(kind, title){
+  const share = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob(["x"])], "t.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })] }));
+  const lost = kind !== "guest" ? guests.filter(g => (kind === "all" || recKind(g) === kind) && g.badge && (g.badgeBack === "НЕТ" || (g.in && !g.out))).length : 0;
+  const lst = lists.find(l => l.kind === kind);
+  const btns = [{ label: "💾 Скачать Excel", value: "save", cls: "main" }];
+  if (share) btns.push({ label: "📤 Отправить Excel (Telegram, IMO, почта…)", value: "share" });
+  if (lst) btns.push({ label: "📋 Открыть список", value: "open" });
+  btns.push({ label: "Отмена", value: 0, cls: "plain" });
+  const r = await ask(title, (kind === "staff" ? "Сотрудники" : kind === "guest" ? "Гости" : "Все записи") + (lost ? "\n⚠️ Бейджей ещё не вернули: " + lost : ""), btns);
+  if (r.value === "open"){ tab = "list:" + lst.id; $("search").value = ""; render(); $("tabs").scrollIntoView({ behavior: "smooth" }); return; }
+  if (r.value === "save" || r.value === "share"){
+    const ok = await deliver(buildXlsx(kind), r.value);
+    if (ok){ dirty = false; persist(); }
+  }
+}
+
+/* ===== возврат бейджа по номеру ===== */
+async function returnBadge(num){
+  const g = guests.find(x => x.badge === num && x.in && !x.out);
+  if (g){
+    const r = await ask("Бейдж № " + num, g.name + (g.kind ? " · " + KIND[g.kind] : "") + "\nВошёл в " + hm(g.in) + "\n\nБейдж вернул — отметить выход?",
+      [{ label: "✅ Бейдж № " + num + " вернул — вышел", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }]);
     if (!r.value) return;
-    if (r.value === "switch"){ how = how === "share" ? "save" : "share"; continue; }
-    const ok = await deliver(buildXlsx(r.value), how);
-    if (ok && (r.value === "all" || !(hasGuest && hasStaff))){ dirty = false; persist(); }
+    g.badgeBack = stamp(); g.out = stamp();
+    done("✅ Бейдж № " + num + " возвращён · вышел: " + g.name);
     return;
   }
+  const late = guests.filter(x => x.badge === num && x.badgeBack === "НЕТ").pop();
+  if (late){
+    const r = await ask("Бейдж № " + num, late.name + "\nУшёл в " + hm(late.out) + " и не вернул бейдж.\nВернул сейчас?",
+      [{ label: "✅ Да, бейдж вернул", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }]);
+    if (r.value){ late.badgeBack = stamp(); done("✅ Бейдж № " + num + " возвращён: " + late.name); }
+    return;
+  }
+  await ask("Бейдж № " + num + " не найден", "Сейчас ни у кого нет бейджа с этим номером.", [{ label: "OK", value: 0, cls: "plain" }]);
+  $("text").value = "";
+}
+$("badgeBtn").addEventListener("click", async () => {
+  const r = await ask("🔖 Вернуть бейдж", "Введите номер бейджа:", [{ label: "Дальше", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }], "", { numeric: true });
+  if (r.value && r.input) await returnBadge(r.input.replace(/\D/g, ""));
 });
 
 $("clearBtn").addEventListener("click", async () => {
