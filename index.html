@@ -52,7 +52,8 @@ body.out #sendBtn{background:var(--blue)}
 .tag.deny{background:#e53935;color:#fff}.tag.ks{background:#7b1fa2;color:#fff}.tag.kg{background:#455a64;color:#fff}
 .lst{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;background:#333;margin-bottom:6px;font-size:14px;cursor:pointer}
 .lst .ln{flex:1;min-width:0;overflow-wrap:anywhere}
-.lst .tag{margin-left:0;white-space:nowrap}.tag.nil{background:#ffb300;color:#000}.tag.no{background:#555;color:#ddd}.tag.bd{background:#1565c0;color:#fff}
+.lst .tag{margin-left:0;white-space:nowrap}
+.ldel{width:38px;height:34px;flex:none;border:0;border-radius:8px;background:#4a1d1d;font-size:17px}.tag.nil{background:#ffb300;color:#000}.tag.no{background:#555;color:#ddd}.tag.bd{background:#1565c0;color:#fff}
 .g.deny{background:rgba(229,57,53,.22)}
 .g .sw{width:12px;height:30px;border-radius:4px;flex:none}
 .empty{color:var(--mut);text-align:center;padding:24px 8px}
@@ -1041,7 +1042,9 @@ function renderLists(){
     const dn = l.items.filter(e => e.deny).length;
     if (dn) n.append(tag("deny", "⛔ " + dn));
     const b = tag(l.badge ? "bd" : "no", l.badge ? "с бейджем" : "без бейджа");
-    d.append(k, n, b);
+    const del = document.createElement("button"); del.className = "ldel"; del.textContent = "🗑"; del.setAttribute("aria-label", "Удалить список");
+    del.onclick = ev => { ev.stopPropagation(); deleteList(l.id); };
+    d.append(k, n, b, del);
     d.onclick = () => editList(l.id);
     return d;
   }));
@@ -1050,6 +1053,17 @@ function renderLists(){
     ? "Бейджей на руках: " + onHand + (lost ? " · не вернули: " + lost : "") + " · нажмите на список, чтобы изменить"
     : "Списки не загружены: приложение просто записывает всех. Загрузите Guest list и/или Vendors check list (.xlsm / .xlsx).";
   $("loadBtn").textContent = lists.length ? "➕ Добавить ещё список" : "📥 Загрузить список (Excel)";
+}
+async function deleteList(id){
+  const l = listById(id); if (!l) return;
+  const came = l.items.filter(e => recsOf(e).some(g => g.in)).length;
+  const c = await ask("Вы действительно хотите удалить этот список?", "«" + l.file + "» · " + l.items.length + " человек" + (came ? "\nУже пришли: " + came + " — их записи входа/выхода останутся." : ""),
+    [{ label: "Да, удалить", value: 1, cls: "red" }, { label: "Нет", value: 0, cls: "plain" }]);
+  if (!c.value) return;
+  lists = lists.filter(x => x.id !== id);
+  if (tab === "list:" + id) tab = l.kind;
+  persist(); render();
+  setStatus("🗑 Список удалён: " + l.file);
 }
 async function editList(id){
   const l = listById(id); if (!l) return;
