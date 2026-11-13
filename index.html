@@ -1,0 +1,1421 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GuestCheck</title>
+<meta name="theme-color" content="#2d2d2d">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#404040; --bar:#2d2d2d; --card:#2a2a2a; --org:#ff9800;
+  --txt:#fff; --blue:#1e88e5; --mut:#bdbdbd; --hl:rgba(255,238,0,.55); --hlText:rgba(255,238,0,.9); --sel:rgba(255,0,255,.85);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,Roboto,Arial,sans-serif}
+header{background:var(--bar);padding:16px;font-size:22px;font-weight:600;display:flex;align-items:center;gap:10px}
+header small{margin-left:auto;font-size:14px;font-weight:400;color:var(--mut)}
+main{padding:12px 12px 230px}
+.seg{display:flex;gap:8px;margin-bottom:12px}
+.seg button{flex:1;padding:14px 8px;font-size:19px;font-weight:700;border-radius:14px;border:2px solid #666;background:transparent;color:var(--mut)}
+.seg #mIn.on{background:var(--org);border-color:var(--org);color:#fff}
+.seg #mOut.on{background:var(--blue);border-color:var(--blue);color:#fff}
+body.out .label{color:#64b5f6} body.out .label b,body.out .camBtn{border-color:var(--blue)} body.out .camBtn svg{fill:var(--blue)}
+body.out #sendBtn{background:var(--blue)}
+.stats{display:flex;gap:8px;margin:12px 0}
+.stats div{flex:1;min-width:0;background:var(--card);border-radius:12px;padding:8px;text-align:center;font-size:13px;color:var(--mut)}
+.stats b{display:block;font-size:22px;color:#fff}
+#sNoBox{display:none}
+#search{width:100%;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid #666;background:#333;color:#fff;margin-bottom:6px}
+.g{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid #555;cursor:pointer}
+.g .n{flex:1;min-width:0;font-size:17px;overflow-wrap:anywhere}
+.g .t{font-size:13px;color:var(--mut);text-align:right;white-space:nowrap;line-height:1.5}
+.g .t .i{color:#ffb74d}.g .t .o{color:#64b5f6}
+.g.inside .n::before{content:"●";color:#4caf50;margin-right:6px;font-size:12px;vertical-align:middle}
+.glbox{background:var(--card);border-radius:14px;padding:10px 12px;margin-top:12px}
+#glInfo{font-size:14px;color:var(--mut);margin-bottom:8px}
+#glInfo b{color:#fff}
+.glrow{display:flex;gap:8px;align-items:center}
+#loadBtn{flex:1;padding:10px;border-radius:10px;border:1px solid #777;background:#333;color:#fff;font-size:15px}
+.chk{display:flex;align-items:center;gap:6px;font-size:15px;white-space:nowrap}
+.chk input{width:22px;height:22px}
+.tabs{display:flex;gap:6px;margin-bottom:8px}
+.tabs button{flex:1;padding:10px;border-radius:10px;border:0;background:#333;color:var(--mut);font-size:15px;font-weight:600}
+.tabs button.on{background:#555;color:#fff}
+.g .tag{display:inline-block;font-size:12px;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:middle}
+.tag.deny{background:#e53935;color:#fff}.tag.ks{background:#7b1fa2;color:#fff}.tag.kg{background:#455a64;color:#fff}
+.lst{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;background:#333;margin-bottom:6px;font-size:14px;cursor:pointer}
+.lst .ln{flex:1;min-width:0;overflow-wrap:anywhere}
+.lst .tag{margin-left:0;white-space:nowrap}.tag.nil{background:#ffb300;color:#000}.tag.no{background:#555;color:#ddd}.tag.bd{background:#1565c0;color:#fff}
+.g.deny{background:rgba(229,57,53,.22)}
+.g .sw{width:12px;height:30px;border-radius:4px;flex:none}
+.empty{color:var(--mut);text-align:center;padding:24px 8px}
+.fbtns{display:flex;gap:8px;margin-top:8px}
+.fbtns button{flex:1;padding:12px 6px;border-radius:12px;border:0;font-size:15px;font-weight:600;background:#333;color:#fff}
+.fbtns #exportBtn{background:#2e7d32}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;z-index:30}
+.modal.on{display:flex}
+.modal .box{background:#2a2a2a;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:85vh;overflow:auto}
+#mTitle{font-size:18px;font-weight:600;margin-bottom:6px}
+.modal .box.danger{background:#4a1010;border-top:8px solid #ff1744}
+.modal .box.danger #mTitle{color:#ff5252;font-size:26px;font-weight:800}
+.modal .box.danger #mText{color:#fff;font-size:17px}
+#mText{color:var(--mut);font-size:15px;margin-bottom:12px;white-space:pre-line}
+#mBody input{width:100%;font-size:20px;padding:12px;border-radius:8px;border:1px solid #888;background:#fff;color:#000;margin-bottom:12px}
+#mBtns{display:grid;gap:8px}
+#mBtns button{padding:14px;border-radius:12px;border:0;font-size:17px;background:#444;color:#fff;text-align:left}
+#mBtns button.main{background:var(--org);text-align:center;font-weight:700}
+#mBtns button.blue{background:var(--blue);text-align:center;font-weight:700}
+#mBtns button.red{background:#c62828;text-align:center}
+#mBtns button.plain{background:transparent;border:1px solid #666;text-align:center}
+.card{background:var(--card);border-radius:18px;padding:16px}
+.label{color:var(--org);font-size:20px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.label b{border:2px solid var(--org);border-radius:4px;padding:0 6px;font-size:15px}
+.row{display:flex;gap:10px}
+#text{flex:1;min-width:0;font-size:22px;padding:12px;border-radius:8px;border:1px solid #888;background:#fff;color:#000}
+.camBtn{width:68px;flex:none;border:2px solid var(--org);border-radius:12px;background:transparent;display:grid;place-items:center;cursor:pointer}
+.camBtn svg{width:40px;height:40px;fill:var(--org)}
+#hist{margin-top:14px;color:var(--mut);font-size:14px}
+#hist div{padding:6px 2px;border-bottom:1px solid #555}
+#sendBtn{position:fixed;right:16px;bottom:92px;width:78px;height:78px;border-radius:50%;border:0;background:var(--org);display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.4);z-index:5}
+#sendBtn svg{width:40px;height:40px;fill:#fff;margin-left:6px}
+footer{position:fixed;left:0;right:0;bottom:0;background:#000;padding:10px 14px calc(10px + env(safe-area-inset-bottom));text-align:center;z-index:4}
+#status{font-size:15px;min-height:20px}
+#link{font-size:13px;margin-top:4px}
+.ok{color:#4caf50}.bad{color:#f44336}
+
+.screen{position:fixed;inset:0;background:#000;display:none;z-index:10;overflow:hidden}
+.screen.on{display:block}
+#video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hint{position:absolute;top:calc(14px + env(safe-area-inset-top));left:12px;right:12px;text-align:center;background:rgba(0,0,0,.55);padding:10px;border-radius:10px;font-size:16px;pointer-events:none;border:3px solid transparent}
+.hint.sharp{border-color:#4caf50}
+.hint.blur{border-color:#f44336}
+#meter{display:block;font-size:13px;margin-top:4px;color:var(--mut)}
+.tools{position:absolute;left:0;right:0;bottom:0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));display:flex;gap:12px;align-items:center;background:linear-gradient(transparent,rgba(0,0,0,.6))}
+.round{width:62px;height:62px;flex:none;border-radius:50%;border:3px solid #fff;background:rgba(0,0,0,.35);color:#fff;font-size:24px;display:grid;place-items:center;cursor:pointer;padding:0}
+.round.on{background:var(--org);border-color:var(--org)}
+.round.ok{border-color:var(--org);background:var(--org)}
+.spacer{flex:1}
+
+#stage{position:absolute;top:0;left:0;right:0;bottom:96px;overflow:auto;background:#111}
+#wrap{position:relative;width:100%}
+#shot{display:block;width:100%;user-select:none;-webkit-user-drag:none}
+.w{position:absolute;background:var(--hlText);border-radius:3px;cursor:pointer;display:flex;align-items:center;overflow:hidden}
+.w span{display:inline-block;color:#000;font-weight:600;line-height:1;white-space:nowrap;transform-origin:0 50%;pointer-events:none;padding-left:1px}
+#wrap.notext .w{background:var(--hl)}
+#wrap.notext .w span{display:none}
+.w.on, #wrap.notext .w.on{background:var(--sel)}
+#pick{position:absolute;top:0;left:0;right:0;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:rgba(0,0,0,.75);font-size:17px;z-index:2;min-height:44px}
+#pick.empty{color:var(--mut)}
+#pick.warn{color:#ffb74d}
+#busy{position:absolute;inset:0;display:none;place-items:center;background:rgba(0,0,0,.45);z-index:3;font-size:18px;text-align:center;padding:20px}
+#busy.on{display:grid}
+</style>
+</head>
+<body>
+
+<header>✔ GuestCheck <small id="evName"></small></header>
+
+<main>
+  <div class="seg"><button id="mIn">⬇ Вход</button><button id="mOut">⬆ Выход</button></div>
+  <div class="card">
+    <div class="label"><b id="modeLetter">⬇</b> <span id="modeLabel">ФАМИЛИЯ ИМЯ — ВХОД</span></div>
+    <div class="row">
+      <input id="text" type="text" autocomplete="off" placeholder="">
+      <button class="camBtn" id="camBtn" aria-label="Камера">
+        <svg viewBox="0 0 24 24"><path d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="glbox">
+    <div id="lists"></div>
+    <div id="glInfo"></div>
+    <div class="glrow"><button id="loadBtn">📥 Загрузить список (Excel)</button></div>
+  </div>
+  <input id="glFile" type="file" accept=".xlsx,.xlsm,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12,text/csv,text/plain" hidden>
+  <div class="stats"><div><b id="sIn">0</b>внутри</div><div><b id="sAll">0</b>пришло</div><div><b id="sOut">0</b>ушло</div><div id="sNoBox"><b id="sNo">0</b>не пришло</div></div>
+  <div class="tabs"><button id="tRec" class="on">Записи</button><button id="tList">Списки (кто пришёл)</button></div>
+  <input id="search" type="search" placeholder="🔍 Поиск" autocomplete="off">
+  <div id="list"></div>
+</main>
+
+<button id="sendBtn" aria-label="Сохранить">
+  <svg viewBox="0 0 24 24"><path d="M2 21 23 12 2 3v7l15 2-15 2z"/></svg>
+</button>
+
+<footer>
+  <div id="status">Нажмите на камеру, чтобы начать.</div>
+  <div id="link">● Проверка…</div>
+  <div class="fbtns"><button id="exportBtn">📤 Скачать Excel</button><button id="clearBtn">🗑 Новый ивент</button></div>
+</footer>
+
+<div class="modal" id="modal"><div class="box">
+  <div id="mTitle"></div><div id="mText"></div><div id="mBody"></div><div id="mBtns"></div>
+</div></div>
+
+<input id="file" type="file" accept="image/*" capture="environment" hidden>
+
+<div class="screen" id="camScreen">
+  <video id="video" playsinline muted></video>
+  <div class="hint" id="hint"><span id="hintText">Наведите на текст и нажмите на экран</span><span id="meter"></span></div>
+  <div class="tools">
+    <button class="round" id="camClose" aria-label="Закрыть">✕</button>
+    <button class="round" id="switchCam" aria-label="Другая камера">⇄</button>
+    <button class="round" id="camZoom" aria-label="Зум камеры">1×</button>
+    <button class="round" id="torch" aria-label="Фонарик">⚡</button>
+    <div class="spacer"></div>
+    <button class="round" id="nativeCam" aria-label="Системная камера">📷</button>
+  </div>
+</div>
+
+<div class="screen" id="selScreen">
+  <div id="pick" class="empty">Нажмите на нужные слова</div>
+  <div id="stage"><div id="wrap"><img id="shot" alt=""></div></div>
+  <div id="busy">Ищу текст…</div>
+  <div class="tools">
+    <button class="round" id="retake" aria-label="Переснять">↻</button>
+    <button class="round" id="zoom" aria-label="Увеличить">1×</button>
+    <button class="round on" id="showText" aria-label="Показать текст">Aa</button>
+    <div class="spacer"></div>
+    <button class="round ok" id="accept" aria-label="Готово">✓</button>
+  </div>
+</div>
+
+<script src="lib/tesseract.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let workerPromise = null, stream = null, words = [], picked = [], zoom = 1, capturing = false;
+let cams = [], camIdx = 0, camZoom = 1;
+
+const LANGS = "eng";
+const MAX_SIDE = 2400;
+const MIN_CONF = 45;
+const BLUR_LIMIT = 80;
+const HINT_DEFAULT = "Наведите на текст и нажмите на экран";
+
+function setStatus(t){ $("status").textContent = t; }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function store(k, v){ try { v === undefined ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+function load(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+function getWorker(){
+  if (!workerPromise){
+    workerPromise = Tesseract.createWorker(LANGS, 1, {
+      workerPath: new URL("lib/worker.min.js", location.href).href,
+      corePath: new URL("lib/core", location.href).href,
+      langPath: new URL("lib/lang", location.href).href,
+      gzip: true,
+      workerBlobURL: false
+    }).then(async w => {
+      try { await w.setParameters({ tessedit_pageseg_mode: "11", preserve_interword_spaces: "1", tessedit_do_invert: "0" }); } catch (e) {}
+      return w;
+    }).catch(e => { workerPromise = null; throw e; });
+  }
+  return workerPromise;
+}
+getWorker().catch(() => {});
+
+function collectWords(data){
+  if (data.words && data.words.length) return data.words;
+  const out = [];
+  (data.blocks || []).forEach(b => (b.paragraphs || []).forEach(p =>
+    (p.lines || []).forEach(l => (l.words || []).forEach(w => out.push(w)))));
+  return out;
+}
+
+function goodWord(wd, W, H){
+  const t = (wd.text || "").trim();
+  if (!t) return false;
+  const al = (t.match(/[0-9A-Za-zА-Яа-яЁёÄäÇçŇňÖöŞşÜüÝýŽž]/g) || []).length;
+  const lt = (t.match(/</g) || []).length;
+  if (al === 0) return false;
+  if ((al + lt) / t.length < 0.6) return false;
+  const b = wd.bbox, bw = b.x1 - b.x0, bh = b.y1 - b.y0;
+  if (bh < Math.max(8, H * 0.006) || bh > H * 0.15) return false;
+  if (al >= 2 && bw < bh * 0.5) return false;
+  if (al === 1) return wd.confidence >= 75;
+  if (al === 2) return wd.confidence >= 55;
+  return wd.confidence >= MIN_CONF;
+}
+
+function mergeWords(list){
+  list.sort((a, b) => b.confidence - a.confidence);
+  const out = [];
+  for (const w of list){
+    const a = w.bbox, sa = (a.x1 - a.x0) * (a.y1 - a.y0);
+    const dup = out.some(o => {
+      const b = o.bbox, sb = (b.x1 - b.x0) * (b.y1 - b.y0);
+      const ix = Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0));
+      const iy = Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0));
+      return ix * iy > 0.4 * Math.min(sa, sb);
+    });
+    if (!dup) out.push(w);
+  }
+  return out;
+}
+
+function toCanvas(src, w, h){
+  const k = Math.min(1, MAX_SIDE / Math.max(w, h));
+  const c = document.createElement("canvas");
+  c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const x = c.getContext("2d");
+  x.imageSmoothingQuality = "high";
+  x.drawImage(src, 0, 0, c.width, c.height);
+  return c;
+}
+
+function sharpness(src, sw, sh){
+  sw = sw || src.width; sh = sh || src.height;
+  const w = 640, h = Math.max(1, Math.round(sh * w / sw));
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const x = c.getContext("2d", { willReadFrequently: true });
+  x.drawImage(src, 0, 0, w, h);
+  const d = x.getImageData(0, 0, w, h).data, g = new Float32Array(w * h);
+  for (let i = 0, j = 0; i < g.length; i++, j += 4) g[i] = .299 * d[j] + .587 * d[j + 1] + .114 * d[j + 2];
+  let sum = 0, sq = 0, n = 0;
+  for (let y = 1; y < h - 1; y++) for (let xx = 1; xx < w - 1; xx++){
+    const i = y * w + xx;
+    const l = 4 * g[i] - g[i - 1] - g[i + 1] - g[i - w] - g[i + w];
+    sum += l; sq += l * l; n++;
+  }
+  const m = sum / n;
+  return sq / n - m * m;
+}
+
+function preprocess(src, target){
+  const f = Math.min(2, target / Math.max(src.width, src.height));
+  const w = Math.round(src.width * f), h = Math.round(src.height * f), n = w * h;
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const x = c.getContext("2d", { willReadFrequently: true });
+  x.imageSmoothingQuality = "high";
+  x.drawImage(src, 0, 0, w, h);
+  const im = x.getImageData(0, 0, w, h), d = im.data;
+  const g = new Float32Array(n), t = new Float32Array(n);
+  for (let i = 0, j = 0; i < n; i++, j += 4) g[i] = Math.max(d[j], d[j + 1], d[j + 2]);
+  for (let y = 0; y < h; y++){
+    const r = y * w;
+    t[r] = g[r]; t[r + w - 1] = g[r + w - 1];
+    for (let xx = 1; xx < w - 1; xx++){ const i = r + xx; t[i] = (g[i - 1] + g[i] + g[i + 1]) / 3; }
+  }
+  const AMT = 0.6, hist = new Uint32Array(256);
+  for (let i = 0, j = 0; i < n; i++, j += 4){
+    const y = (i / w) | 0;
+    const b = (y > 0 && y < h - 1) ? (t[i - w] + t[i] + t[i + w]) / 3 : t[i];
+    d[j] = g[i] + AMT * (g[i] - b);
+    hist[d[j]]++;
+  }
+  let lo = 0, hi = 255, acc = 0;
+  for (; lo < 255; lo++){ acc += hist[lo]; if (acc > n * .01) break; }
+  acc = 0;
+  for (hi = 0; hi < 255; hi++){ acc += hist[hi]; if (acc > n * .5) break; }
+  const k = 255 / Math.max(1, hi - lo);
+  for (let j = 0; j < d.length; j += 4){
+    const v = (d[j] - lo) * k;
+    d[j] = d[j + 1] = d[j + 2] = v; d[j + 3] = 255;
+  }
+  x.putImageData(im, 0, 0);
+  return { canvas: c, scale: f };
+}
+
+function binarize(src, target){
+  const f = Math.min(2, target / Math.max(src.width, src.height));
+  const w = Math.round(src.width * f), h = Math.round(src.height * f), n = w * h;
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const x = c.getContext("2d", { willReadFrequently: true });
+  x.imageSmoothingQuality = "high";
+  x.drawImage(src, 0, 0, w, h);
+  const im = x.getImageData(0, 0, w, h), d = im.data;
+  const g = new Uint8Array(n);
+  for (let i = 0, j = 0; i < n; i++, j += 4) g[i] = Math.max(d[j], d[j + 1], d[j + 2]);
+  const W1 = w + 1, I = new Uint32Array(W1 * (h + 1));
+  for (let y = 0; y < h; y++){
+    let row = 0; const o = (y + 1) * W1, p = y * W1, r = y * w;
+    for (let xx = 0; xx < w; xx++){ row += g[r + xx]; I[o + xx + 1] = I[p + xx + 1] + row; }
+  }
+  const half = Math.max(7, Math.round(Math.max(w, h) / 90)), T = 0.2;
+  const b = new Uint8Array(n);
+  for (let y = 0; y < h; y++){
+    const y0 = Math.max(0, y - half), y1 = Math.min(h - 1, y + half);
+    for (let xx = 0; xx < w; xx++){
+      const x0 = Math.max(0, xx - half), x1 = Math.min(w - 1, xx + half);
+      const cnt = (x1 - x0 + 1) * (y1 - y0 + 1);
+      const sum = I[(y1 + 1) * W1 + x1 + 1] - I[y0 * W1 + x1 + 1] - I[(y1 + 1) * W1 + x0] + I[y0 * W1 + x0];
+      if (g[y * w + xx] * cnt < sum * (1 - T)) b[y * w + xx] = 1;
+    }
+  }
+  const m = new Uint8Array(n);
+  for (let y = 1; y < h - 1; y++) for (let xx = 1; xx < w - 1; xx++){
+    const i = y * w + xx;
+    const s = b[i - w - 1] + b[i - w] + b[i - w + 1] + b[i - 1] + b[i] + b[i + 1] + b[i + w - 1] + b[i + w] + b[i + w + 1];
+    if (s >= 5) m[i] = 1;
+  }
+  const q = new Int32Array(n), minA = Math.max(6, Math.round(n * 0.000004)), bigA = n * 0.01;
+  for (let i = 0; i < n; i++){
+    if (m[i] !== 1) continue;
+    let head = 0, tail = 0, minY = h, maxY = 0;
+    q[tail++] = i; m[i] = 2;
+    while (head < tail){
+      const p = q[head++], py = (p / w) | 0, px = p - py * w;
+      if (py < minY) minY = py; if (py > maxY) maxY = py;
+      for (let dy = -1; dy <= 1; dy++){
+        const ny = py + dy; if (ny < 0 || ny >= h) continue;
+        for (let dx = -1; dx <= 1; dx++){
+          const nx = px + dx; if (nx < 0 || nx >= w) continue;
+          const ni = ny * w + nx;
+          if (m[ni] === 1){ m[ni] = 2; q[tail++] = ni; }
+        }
+      }
+    }
+    if (tail < minA || (tail > bigA && maxY - minY > h * 0.12)) for (let k = 0; k < tail; k++) m[q[k]] = 3;
+  }
+  for (let i = 0, j = 0; i < n; i++, j += 4){
+    const v = m[i] === 2 ? 0 : 255;
+    d[j] = d[j + 1] = d[j + 2] = v; d[j + 3] = 255;
+  }
+  x.putImageData(im, 0, 0);
+  return { canvas: c, scale: f };
+}
+
+function show(id){
+  ["camScreen", "selScreen"].forEach(s => $(s).classList.toggle("on", s === id));
+}
+function stopStream(){
+  if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+}
+function closeAll(){
+  stopStream();
+  $("torch").classList.remove("on");
+  show(null);
+}
+
+function camScore(d){
+  const l = (d.label || "").toLowerCase();
+  let s = 0;
+  if (/front|user|передн|selfie/.test(l)) s -= 10;
+  if (/back|rear|environment|задн/.test(l)) s += 2;
+  if (/camera2? 0\b/.test(l)) s += 5;
+  if (/wide|ultra|tele|macro|depth/.test(l)) s -= 4;
+  return s;
+}
+async function listCams(){
+  const all = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === "videoinput");
+  const back = all.filter(d => camScore(d) > -10);
+  return (back.length ? back : all).sort((a, b) => camScore(b) - camScore(a));
+}
+
+async function startStream(deviceId){
+  stopStream();
+  const base = { width: { ideal: 3840 }, height: { ideal: 2160 } };
+  const pick = deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: "environment" } };
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: Object.assign({}, base, pick), audio: false });
+  } catch (e){
+    stream = await navigator.mediaDevices.getUserMedia({ video: pick, audio: false });
+  }
+  const v = $("video");
+  v.srcObject = stream;
+  await v.play();
+  await setupTrack();
+}
+
+async function setupTrack(){
+  const track = stream.getVideoTracks()[0];
+  const caps = track.getCapabilities ? track.getCapabilities() : {};
+  $("torch").style.display = caps.torch ? "" : "none";
+  $("torch").classList.remove("on");
+  $("camZoom").style.display = caps.zoom ? "" : "none";
+  camZoom = 1; $("camZoom").textContent = "1×";
+  const adv = {};
+  if (caps.focusMode && caps.focusMode.includes("continuous")) adv.focusMode = "continuous";
+  if (caps.exposureMode && caps.exposureMode.includes("continuous")) adv.exposureMode = "continuous";
+  if (caps.whiteBalanceMode && caps.whiteBalanceMode.includes("continuous")) adv.whiteBalanceMode = "continuous";
+  if (Object.keys(adv).length){ try { await track.applyConstraints({ advanced: [adv] }); } catch (e) {} }
+  const v = $("video");
+  $("hintText").textContent = HINT_DEFAULT + " (камера " + v.videoWidth + "×" + v.videoHeight + ")";
+}
+
+async function openCamera(){
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    setStatus("Живая камера работает только по https. Открываю обычную камеру.");
+    $("file").click(); return;
+  }
+  try {
+    const saved = load("camId");
+    await startStream(cams[camIdx] ? cams[camIdx].deviceId : saved || undefined);
+  } catch (e){
+    store("camId");
+    try { await startStream(); }
+    catch (e2){
+      setStatus("Камера недоступна (" + e2.message + "). Открываю обычную камеру.");
+      $("file").click(); return;
+    }
+  }
+  if (!cams.length){
+    try { cams = await listCams(); } catch (e) { cams = []; }
+    const cur = stream.getVideoTracks()[0].getSettings().deviceId;
+    camIdx = Math.max(0, cams.findIndex(c => c.deviceId === cur));
+    if (!load("camId") && cams.length && cams[0].deviceId !== cur){
+      camIdx = 0;
+      try { await startStream(cams[0].deviceId); } catch (e) {}
+    }
+  }
+  $("switchCam").style.display = cams.length > 1 ? "" : "none";
+  show("camScreen");
+  history.pushState({ cam: 1 }, "");
+}
+
+$("camBtn").addEventListener("click", openCamera);
+$("camClose").addEventListener("click", () => history.back());
+window.addEventListener("popstate", () => { if ($("camScreen").classList.contains("on") || $("selScreen").classList.contains("on")) closeAll(); });
+
+$("switchCam").addEventListener("click", async () => {
+  if (cams.length < 2) return;
+  camIdx = (camIdx + 1) % cams.length;
+  store("camId", cams[camIdx].deviceId);
+  try { await startStream(cams[camIdx].deviceId); } catch (e){ setStatus("Не удалось переключить камеру"); }
+});
+
+$("camZoom").addEventListener("click", async () => {
+  if (!stream) return;
+  const t = stream.getVideoTracks()[0];
+  const caps = t.getCapabilities ? t.getCapabilities() : {};
+  if (!caps.zoom) return;
+  const steps = [1, 1.5, 2, 3].filter(z => z <= caps.zoom.max);
+  camZoom = steps[(steps.indexOf(camZoom) + 1) % steps.length];
+  try { await t.applyConstraints({ advanced: [{ zoom: Math.max(caps.zoom.min, camZoom) }] }); } catch (e) {}
+  $("camZoom").textContent = camZoom + "×";
+});
+
+$("nativeCam").addEventListener("click", () => $("file").click());
+
+$("torch").addEventListener("click", async () => {
+  if (!stream) return;
+  const on = !$("torch").classList.contains("on");
+  try {
+    await stream.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: on }] });
+    $("torch").classList.toggle("on", on);
+  } catch (e){ $("torch").style.display = "none"; }
+});
+
+setInterval(() => {
+  const v = $("video"), h = $("hint");
+  if (!$("camScreen").classList.contains("on") || capturing || !v.videoWidth || v.paused){ return; }
+  const s = sharpness(v, v.videoWidth, v.videoHeight);
+  const okS = s >= BLUR_LIMIT * 1.5;
+  h.classList.toggle("sharp", okS);
+  h.classList.toggle("blur", !okS);
+  $("meter").textContent = okS ? "Резко — можно снимать" : "Размыто: отодвиньте телефон на 20–25 см или нажмите 2×";
+}, 700);
+
+async function focusAt(track, e, v){
+  const caps = track.getCapabilities ? track.getCapabilities() : {};
+  if (!caps.focusMode) { await sleep(300); return; }
+  const r = v.getBoundingClientRect();
+  const p = { x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) };
+  try {
+    const adv = { pointsOfInterest: [p] };
+    if (caps.focusMode.includes("single-shot")) adv.focusMode = "single-shot";
+    await track.applyConstraints({ advanced: [adv] });
+  } catch (err) {}
+  await sleep(600);
+}
+
+async function restoreFocus(track){
+  const caps = track.getCapabilities ? track.getCapabilities() : {};
+  if (caps.focusMode && caps.focusMode.includes("continuous")){
+    try { await track.applyConstraints({ advanced: [{ focusMode: "continuous" }] }); } catch (e) {}
+  }
+}
+
+async function takeFullPhoto(track){
+  if (!("ImageCapture" in window)) return null;
+  const ic = new ImageCapture(track);
+  let opts = {};
+  try {
+    const pc = await ic.getPhotoCapabilities();
+    if (pc.imageWidth && pc.imageWidth.max) opts = { imageWidth: pc.imageWidth.max, imageHeight: pc.imageHeight.max };
+  } catch (e) {}
+  const blob = await Promise.race([ic.takePhoto(opts), sleep(3000).then(() => { throw new Error("timeout"); })]);
+  const bmp = await createImageBitmap(blob);
+  return toCanvas(bmp, bmp.width, bmp.height);
+}
+
+async function bestFrame(v, n, gap){
+  let best = null, score = -1;
+  for (let i = 0; i < n; i++){
+    if (v.videoWidth){
+      const s = sharpness(v, v.videoWidth, v.videoHeight);
+      if (s > score){ score = s; best = toCanvas(v, v.videoWidth, v.videoHeight); }
+    }
+    await sleep(gap);
+  }
+  return { canvas: best, score };
+}
+
+$("video").addEventListener("click", async e => {
+  const v = $("video");
+  if (!v.videoWidth || capturing || !stream) return;
+  capturing = true;
+  $("hintText").textContent = "Фокусировка… держите телефон неподвижно";
+  $("meter").textContent = "";
+  const track = stream.getVideoTracks()[0];
+  try {
+    await focusAt(track, e, v);
+    let best = await bestFrame(v, 5, 50);
+    try {
+      const photo = await takeFullPhoto(track);
+      if (photo){
+        const s = sharpness(photo);
+        if (s >= best.score * 0.8) best = { canvas: photo, score: s };
+      }
+    } catch (err) {}
+    if (!best.canvas) return;
+    v.pause();
+    analyze(best.canvas, best.score);
+  } finally {
+    capturing = false;
+    restoreFocus(track);
+    $("hintText").textContent = HINT_DEFAULT;
+  }
+});
+
+$("file").addEventListener("change", async e => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const img = new Image();
+  img.src = URL.createObjectURL(file);
+  await img.decode();
+  if (stream) $("video").pause();
+  analyze(toCanvas(img, img.naturalWidth, img.naturalHeight));
+  if (!history.state) history.pushState({ cam: 1 }, "");
+});
+
+async function analyze(canvas, score){
+  if (score === undefined) score = sharpness(canvas);
+  $("shot").src = canvas.toDataURL("image/jpeg", 0.92);
+  $("wrap").querySelectorAll(".w").forEach(n => n.remove());
+  words = []; picked = []; updatePick();
+  setZoom(1);
+  show("selScreen");
+  $("busy").textContent = "Ищу текст…";
+  $("busy").classList.add("on");
+  try {
+    const w = await getWorker();
+    const W = canvas.width, H = canvas.height, all = [];
+    const runPass = async pp => {
+      const { data } = await w.recognize(pp.canvas, {}, { text: true, blocks: true });
+      const sc = pp.scale;
+      collectWords(data).forEach(x => all.push({
+        text: x.text, confidence: x.confidence,
+        bbox: { x0: x.bbox.x0 / sc, y0: x.bbox.y0 / sc, x1: x.bbox.x1 / sc, y1: x.bbox.y1 / sc }
+      }));
+    };
+    await runPass(binarize(canvas, 1800));
+    if (all.filter(x => goodWord(x, W, H)).length < 12){
+      $("busy").textContent = "Ищу текст… ещё раз";
+      await runPass(preprocess(canvas, 1300));
+    }
+    words = mergeWords(all.filter(x => goodWord(x, W, H)));
+    try { await $("shot").decode(); } catch (e) {}
+    words.forEach((wd, i) => {
+      const b = wd.bbox, pad = 2;
+      const d = document.createElement("div");
+      d.className = "w";
+      d.style.left = (b.x0 - pad) / W * 100 + "%";
+      d.style.top = (b.y0 - pad) / H * 100 + "%";
+      d.style.width = (b.x1 - b.x0 + pad * 2) / W * 100 + "%";
+      d.style.height = (b.y1 - b.y0 + pad * 2) / H * 100 + "%";
+      const s = document.createElement("span");
+      s.textContent = wd.text.trim();
+      d.appendChild(s);
+      d.addEventListener("click", () => toggle(i, d));
+      $("wrap").appendChild(d);
+    });
+    layoutLabels();
+    $("busy").classList.remove("on");
+    if (!words.length){
+      $("pick").textContent = "Текст не найден. Нажмите ↻ и снимите с 20–25 см, при хорошем свете.";
+      $("pick").className = "warn";
+    } else if (score < BLUR_LIMIT){
+      $("pick").textContent = "Снимок размытый — лучше нажать ↻ и переснять.";
+      $("pick").className = "warn";
+    }
+  } catch (err){
+    $("busy").textContent = "Ошибка распознавания: " + err.message;
+  }
+}
+
+function layoutLabels(){
+  if ($("wrap").classList.contains("notext")) return;
+  $("wrap").querySelectorAll(".w").forEach(d => {
+    const s = d.firstChild;
+    s.style.transform = "";
+    s.style.fontSize = Math.max(8, d.clientHeight * 0.8) + "px";
+    const k = s.scrollWidth ? Math.min(1.6, (d.clientWidth - 2) / s.scrollWidth) : 1;
+    s.style.transform = "scaleX(" + k + ")";
+  });
+}
+window.addEventListener("resize", layoutLabels);
+
+$("showText").addEventListener("click", () => {
+  const on = $("wrap").classList.toggle("notext");
+  $("showText").classList.toggle("on", !on);
+  layoutLabels();
+});
+
+function toggle(i, el){
+  const k = picked.indexOf(i);
+  if (k >= 0){ picked.splice(k, 1); el.classList.remove("on"); }
+  else { picked.push(i); el.classList.add("on"); }
+  updatePick();
+}
+
+function pickedText(){
+  return picked.map(i => words[i].text.trim()).join(" ");
+}
+
+function updatePick(){
+  const t = pickedText();
+  $("pick").textContent = t || "Нажмите на нужные слова";
+  $("pick").className = t ? "" : "empty";
+}
+
+function setZoom(z){
+  zoom = z;
+  $("wrap").style.width = (z * 100) + "%";
+  $("zoom").textContent = z + "×";
+  layoutLabels();
+}
+$("zoom").addEventListener("click", () => setZoom(zoom >= 3 ? 1 : zoom + 1));
+
+$("retake").addEventListener("click", () => {
+  if (stream){ $("video").play(); show("camScreen"); }
+  else { $("file").click(); }
+});
+
+$("accept").addEventListener("click", () => {
+  const t = pickedText();
+  if (!t){ $("pick").textContent = "Сначала нажмите на слово (станет розовым)"; return; }
+  $("text").value = t;
+  history.back();
+  setStatus("Проверьте текст и нажмите ➤, чтобы сохранить.");
+});
+
+/* ===== GuestCheck: всё хранится в этом телефоне ===== */
+const KEY = "guests_v1", LKEY = "glists_v2";
+// записи: {id, name, scanned, listId(гость в списке), lst(id списка), kind, in, out, badge, badgeBack, deny, nil, color}
+let guests = [];
+// списки: {id, file, sheet, kind:"guest"|"staff", badge:bool, items:[{id,row,name,color,deny}]}
+let lists = [];
+try { guests = JSON.parse(load(KEY)) || []; } catch (e) { guests = []; }
+try { lists = JSON.parse(load(LKEY)) || []; } catch (e) { lists = []; }
+// перенос со старой версии (один список)
+try {
+  const old = JSON.parse(load("glist_v1") || "null");
+  if (old && old.length && !lists.length){
+    lists = [{ id: "A", file: load("glName") || "Guest list", sheet: "Guest list", kind: "guest", badge: false, items: old.map(e => Object.assign({}, e, { id: "A" + e.id })) }];
+    guests.forEach(g => { if (g.listId) { g.listId = "A" + g.listId; g.lst = "A"; g.kind = "guest"; } });
+  }
+  if (old) store("glist_v1");
+} catch (e) {}
+let mode = load("mode") === "out" ? "out" : "in";
+let tab = "rec";
+let dirty = load("dirty") === "1";
+
+function persist(){
+  try {
+    localStorage.setItem(KEY, JSON.stringify(guests));
+    localStorage.setItem(LKEY, JSON.stringify(lists));
+    localStorage.setItem("dirty", dirty ? "1" : "0");
+    return true;
+  } catch (e){
+    setStatus("⚠️ Не получилось сохранить в телефон! Скачайте Excel прямо сейчас.");
+    return false;
+  }
+}
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+const pad2 = n => String(n).padStart(2, "0");
+function stamp(d){
+  d = d || new Date();
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " +
+    pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
+}
+const hm = s => s ? s.slice(11, 16) : "";
+const KIND = { guest: "Гость", staff: "Сотрудник" };
+const listById = id => lists.find(l => l.id === id);
+function allEntries(){ const out = []; lists.forEach(l => l.items.forEach(e => out.push({ e, l }))); return out; }
+function entryById(id){ for (const l of lists){ const e = l.items.find(x => x.id === id); if (e) return { e, l }; } return null; }
+const recsOf = e => guests.filter(g => g.listId === e.id);
+const totalItems = () => lists.reduce((s, l) => s + l.items.length, 0);
+
+/* ===== сравнение имён (как в Excel-макросе) =====
+   без регистра, ü→U, ň→N, W=V; совпадает, если: одно — часть другого, одинаковые первые 5 букв,
+   или отличается на 1–2 буквы (ошибка сканера) */
+const TR = { "Ü":"U","Ň":"N","Ý":"Y","Ş":"S","Ç":"C","Ä":"A","Ö":"O","Ž":"Z","Ё":"Е","W":"V" };
+function norm(s){
+  return String(s || "").toUpperCase().replace(/[ÜŇÝŞÇÄÖŽЁW]/g, c => TR[c]).replace(/[^A-ZА-Я0-9]/g, "");
+}
+function lev(a, b){
+  const m = a.length, n = b.length; let prev = Array.from({length: n + 1}, (_, j) => j);
+  for (let i = 1; i <= m; i++){
+    const cur = [i];
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[n];
+}
+function tokSim(a, b){
+  if (!a || !b || a.length < 2 || b.length < 2) return false;
+  if (a === b) return true;
+  if (a.length >= 5 && b.length >= 5 && a.slice(0, 5) === b.slice(0, 5)) return true;
+  return lev(a, b) <= Math.max(1, Math.floor(Math.min(a.length, b.length) / 5));
+}
+function parts(name){
+  const n = String(name || "");
+  let s, f;
+  if (n.includes(",")){ const i = n.indexOf(","); s = n.slice(0, i); f = n.slice(i + 1); }
+  else { const w = n.trim().split(/\s+/); s = w[0] || ""; f = w.slice(1).join(" "); }
+  return { s: norm(s), f: norm(f), fw: f.trim().split(/\s+/).map(norm).filter(Boolean), all: norm(n) };
+}
+function toks(scan){ return String(scan || "").split(/[\s,.;:\/<]+/).map(norm).filter(t => t.length >= 2); }
+// насколько отсканированный текст похож на имя: null — не похож; rank меньше = лучше
+function matchName(scan, name){
+  const P = parts(name), T = toks(scan), W = norm(scan);
+  if (!W || !P.all) return null;
+  const sM = T.some(t => tokSim(t, P.s));
+  const fM = !!P.f && T.some(t => tokSim(t, P.f) || P.fw.some(w => tokSim(t, w)));
+  const near = (x, y) => lev(x, y) <= Math.max(1, Math.floor(Math.min(x.length, y.length) / 5));
+  const whole = W === P.all || W === P.f + P.s || near(W, P.all) || (!!P.f && near(W, P.f + P.s));
+  const contains = (W.length >= 4 && P.all.includes(W)) || (P.s.length >= 4 && W.includes(P.s));
+  if (!(sM || fM || whole || contains)) return null;
+  const d = Math.min(lev(W, P.all), P.f ? lev(W, P.f + P.s) : 99);
+  return { rank: (whole ? 0 : 4) + (sM ? 0 : 2) + (fM ? 0 : 1) + d / 100, strong: whole || (sM && fM) };
+}
+function similar(a, b){ return !!matchName(a, b); }
+
+/* ===== окно с выбором (вместо системных alert/confirm) ===== */
+function ask(title, text, buttons, input, opt){
+  opt = opt || {};
+  return new Promise(resolve => {
+    $("modal").querySelector(".box").classList.toggle("danger", !!opt.danger);
+    $("mTitle").textContent = title;
+    $("mText").textContent = text || "";
+    $("mBody").replaceChildren();
+    let inp = null;
+    if (input != null){
+      inp = document.createElement("input");
+      inp.value = input; inp.autocomplete = "off";
+      if (opt.numeric){ inp.inputMode = "numeric"; inp.placeholder = "Например: 15"; }
+      $("mBody").append(inp);
+      setTimeout(() => inp.focus(), 50);
+      inp.addEventListener("keydown", e => { if (e.key === "Enter") $("mBtns").firstChild.click(); });
+    }
+    $("mBtns").replaceChildren(...buttons.map(b => {
+      const el = document.createElement("button");
+      el.textContent = b.label; if (b.cls) el.className = b.cls;
+      if (b.color){ el.style.borderLeft = "10px solid " + b.color; }
+      el.onclick = () => { $("modal").classList.remove("on"); resolve({ value: b.value, input: inp ? inp.value.trim() : null }); };
+      return el;
+    }));
+    $("modal").classList.add("on");
+    if (opt.danger && navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 300]);
+  });
+}
+$("modal").addEventListener("click", e => { if (e.target === $("modal")) $("mBtns").lastChild.click(); });
+
+function setMode(m){
+  mode = m; store("mode", m);
+  document.body.classList.toggle("out", m === "out");
+  $("mIn").classList.toggle("on", m === "in");
+  $("mOut").classList.toggle("on", m === "out");
+  $("modeLetter").textContent = m === "in" ? "⬇" : "⬆";
+  $("modeLabel").textContent = m === "in" ? "ФАМИЛИЯ ИМЯ — ВХОД" : "ФАМИЛИЯ ИМЯ / № БЕЙДЖА — ВЫХОД";
+  $("text").placeholder = m === "in" ? "" : "имя или номер бейджа";
+}
+$("mIn").addEventListener("click", () => setMode("in"));
+$("mOut").addEventListener("click", () => setMode("out"));
+
+function newId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function done(msg){
+  dirty = true; persist(); render();
+  $("text").value = "";
+  setStatus(msg);
+  if (navigator.vibrate) navigator.vibrate(60);
+}
+
+/* ===== ВХОД ===== */
+async function admit(scanned, hit){
+  // hit = {e, l} — человек из списка, или null («нет в списке»)
+  const e = hit ? hit.e : null, l = hit ? hit.l : null;
+  const who = e ? e.name : scanned;
+  if (e && e.deny){
+    const r = await ask("⛔ ЧЁРНЫЙ СПИСОК", e.name + (l ? " · " + KIND[l.kind] : "") + "\nЭтот человек в чёрном списке. Не пускать!",
+      [{ label: "Не пускать", value: 0, cls: "red" }, { label: "Всё равно впустить", value: 1, cls: "plain" }], null, { danger: true });
+    if (!r.value){ setStatus("⛔ Не впущен (чёрный список): " + e.name); $("text").value = ""; return; }
+  }
+  const prev = e ? recsOf(e).filter(g => g.in) : guests.filter(g => g.in && !g.listId && norm(g.name) === norm(scanned));
+  const insideNow = prev.find(g => !g.out);
+  if (prev.length){
+    const p = insideNow || prev[prev.length - 1];
+    const r = await ask(insideNow ? "Уже внутри!" : "Уже приходил",
+      p.name + "\nВошёл в " + hm(p.in) + (p.out ? ", ушёл в " + hm(p.out) : "") + (p.badge ? "\nБейдж № " + p.badge : "") + "\nЗаписать вход ещё раз?",
+      [{ label: "Записать ещё раз", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }], null, { danger: !!insideNow });
+    if (!r.value) return;
+  }
+  let badge = "";
+  if (l && l.badge){
+    for (;;){
+      const r = await ask("Выдайте бейдж: какой номер?", who + " · " + KIND[l.kind], [
+        { label: "Сохранить", value: 1, cls: "main" }, { label: "Без бейджа", value: 2 }, { label: "Отмена", value: 0, cls: "plain" }], "", { numeric: true });
+      if (!r.value) return;
+      if (r.value === 2) break;
+      badge = r.input;
+      if (!badge){ continue; }
+      const busy = guests.find(g => g.badge === badge && g.in && !g.out);
+      if (!busy) break;
+      const r2 = await ask("Бейдж № " + badge + " уже на руках", busy.name + " (вошёл " + hm(busy.in) + ") ещё не вернул его.",
+        [{ label: "Ввести другой номер", value: 2, cls: "main" }, { label: "Всё равно выдать", value: 1 }, { label: "Отмена", value: 0, cls: "plain" }]);
+      if (!r2.value) return;
+      if (r2.value === 1) break;
+    }
+  }
+  guests.push({ id: newId(), name: who, scanned, listId: e ? e.id : "", lst: l ? l.id : "", kind: l ? l.kind : "",
+    in: stamp(), out: "", badge, badgeBack: "", deny: !!(e && e.deny), nil: !e && lists.length > 0, color: e ? e.color || "" : "" });
+  done("✅ Вход: " + who + (l ? " · " + KIND[l.kind] : "") + (badge ? " · бейдж № " + badge : "") + (!e && lists.length ? " (нет в списке)" : ""));
+}
+
+async function saveIn(name){
+  if (!lists.length) return admit(name, null);
+  const cands = allEntries().map(x => Object.assign(x, { m: matchName(name, x.e.name) })).filter(x => x.m).sort((a, b) => a.m.rank - b.m.rank);
+  const strong = cands.filter(x => x.m.strong);
+  if (strong.length === 1 && (cands.length === 1 || strong[0].m.rank < 1)) return admit(name, strong[0]);
+  if (!cands.length){
+    const r = await ask("Нет в списке!", "«" + name + "» не найден ни в одном списке.",
+      [{ label: "Не пускать", value: 0, cls: "red" }, { label: "Всё равно впустить (отметить «нет в списке»)", value: 1, cls: "plain" }], null, { danger: true });
+    if (r.value) return admit(name, null);
+    setStatus("Не впущен (нет в списке): " + name); $("text").value = "";
+    return;
+  }
+  const top = cands.slice(0, 9);
+  const btns = top.map((x, i) => {
+    const rs = recsOf(x.e).filter(g => g.in), inside = rs.find(g => !g.out);
+    return { label: (i + 1) + ". " + (x.e.deny ? "⛔ " : "") + x.e.name + "  — " + KIND[x.l.kind] + " №" + x.e.row + (inside ? " · уже внутри" : rs.length ? " · уже был" : ""),
+      value: x.e.id, cls: x.e.deny ? "red" : "", color: x.e.color && !x.e.deny ? x.e.color : "" };
+  });
+  btns.push({ label: "Никто из них — нет в списке", value: "nil", cls: "plain" }, { label: "Отмена", value: 0, cls: "plain" });
+  const r = await ask("Похожие: выберите номер", "Для «" + name + "» найдено: " + cands.length, btns);
+  if (!r.value) return;
+  if (r.value === "nil") return admit(name, null);
+  return admit(name, entryById(r.value));
+}
+
+/* ===== ВЫХОД ===== */
+async function checkout(g){
+  if (g.badge){
+    const r = await ask("Заберите бейдж № " + g.badge, g.name + "\nВошёл в " + hm(g.in),
+      [{ label: "✅ Бейдж № " + g.badge + " вернул", value: "yes", cls: "main" }, { label: "Бейдж НЕ вернул", value: "no", cls: "red" }, { label: "Отмена", value: 0, cls: "plain" }]);
+    if (!r.value) return;
+    g.badgeBack = r.value === "yes" ? stamp() : "НЕТ";
+  }
+  g.out = stamp();
+  done("✅ Выход: " + g.name + (g.badge ? (g.badgeBack === "НЕТ" ? " · ⚠️ бейдж № " + g.badge + " НЕ вернул" : " · бейдж № " + g.badge + " возвращён") : ""));
+}
+async function saveOut(name){
+  const inside = guests.filter(g => g.in && !g.out);
+  if (/^\d+$/.test(name)){                       // ввели номер бейджа
+    const b = inside.filter(g => g.badge === name);
+    if (b.length === 1) return checkout(b[0]);
+    if (!b.length){
+      const r = await ask("Бейдж № " + name + " не найден", "Ни у кого внутри нет бейджа с этим номером.", [{ label: "OK", value: 0, cls: "plain" }]);
+      return;
+    }
+  }
+  const exact = inside.filter(g => norm(g.name) === norm(name) || norm(g.scanned) === norm(name));
+  if (exact.length === 1) return checkout(exact[0]);
+  const cands = inside.map(g => ({ g, m: (g.badge && g.badge === name ? { rank: 0 } : null) || matchName(name, g.name) || matchName(name, g.scanned || "") }))
+    .filter(x => x.m).sort((a, b) => a.m.rank - b.m.rank).slice(0, 9);
+  const btns = cands.map((x, i) => ({ label: (i + 1) + ". " + x.g.name + (x.g.kind ? " — " + KIND[x.g.kind] : "") + "  (вошёл " + hm(x.g.in) + (x.g.badge ? ", бейдж " + x.g.badge : "") + ")", value: x.g.id }));
+  btns.push({ label: "Нет в списке — записать выход отдельно", value: "new", cls: "blue" });
+  btns.push({ label: "Отмена", value: 0, cls: "plain" });
+  const r = await ask(cands.length ? "Кто уходит? Выберите номер" : "Не найден среди тех, кто внутри",
+    cands.length ? "Похожие внутри для «" + name + "»:" : "«" + name + "» не записан на вход (или уже вышел).", btns);
+  if (!r.value) return;
+  if (r.value === "new"){
+    guests.push({ id: newId(), name, scanned: name, listId: "", lst: "", kind: "", in: "", out: stamp(), badge: "", badgeBack: "", deny: false, nil: lists.length > 0, color: "" });
+    done("✅ Выход (без входа): " + name);
+    return;
+  }
+  return checkout(guests.find(g => g.id === r.value));
+}
+
+async function saveNow(){
+  const name = $("text").value.trim().replace(/\s+/g, " ");
+  if (!name){ setStatus("Поле пустое: отсканируйте или впишите имя."); return; }
+  if (mode === "in") await saveIn(name); else await saveOut(name);
+}
+$("sendBtn").addEventListener("click", saveNow);
+$("text").addEventListener("keydown", e => { if (e.key === "Enter") saveNow(); });
+
+/* ===== ЭКРАН ===== */
+function tag(cls, text){ const t = document.createElement("span"); t.className = "tag " + cls; t.textContent = text; return t; }
+function row(name, timesEl, opts){
+  const d = document.createElement("div");
+  d.className = "g" + (opts.inside ? " inside" : "") + (opts.deny ? " deny" : "");
+  const sw = document.createElement("div"); sw.className = "sw"; sw.style.background = opts.color || "transparent";
+  const n = document.createElement("div"); n.className = "n"; n.textContent = name;
+  (opts.tags || []).forEach(t => n.append(t));
+  d.append(sw, n, timesEl);
+  return d;
+}
+function timesOf(g){
+  const t = document.createElement("div"); t.className = "t";
+  if (g && g.in){ const i = document.createElement("div"); i.className = "i"; i.textContent = "⬇ " + hm(g.in); t.append(i); }
+  if (g && g.out){ const o = document.createElement("div"); o.className = "o"; o.textContent = "⬆ " + hm(g.out); t.append(o); }
+  return t;
+}
+function recTags(g){
+  const tags = [];
+  if (g.kind) tags.push(tag(g.kind === "staff" ? "ks" : "kg", KIND[g.kind]));
+  if (g.deny) tags.push(tag("deny", "чёрный список"));
+  if (g.nil) tags.push(tag("nil", "нет в списке"));
+  if (g.badge) tags.push(tag(g.out && g.badgeBack === "НЕТ" ? "deny" : "bd", "№ " + g.badge + (g.out ? (g.badgeBack === "НЕТ" ? " не вернул" : " ✓") : "")));
+  return tags;
+}
+function renderLists(){
+  const box = $("lists");
+  box.replaceChildren(...lists.map(l => {
+    const d = document.createElement("div"); d.className = "lst";
+    const k = tag(l.kind === "staff" ? "ks" : "kg", l.kind === "staff" ? "🛠 Сотрудники" : "👥 Гости");
+    const n = document.createElement("div"); n.className = "ln"; n.textContent = l.file + " · " + l.items.length;
+    const dn = l.items.filter(e => e.deny).length;
+    if (dn) n.append(tag("deny", "⛔ " + dn));
+    const b = tag(l.badge ? "bd" : "no", l.badge ? "с бейджем" : "без бейджа");
+    d.append(k, n, b);
+    d.onclick = () => editList(l.id);
+    return d;
+  }));
+  const onHand = guests.filter(g => g.badge && g.in && !g.out).length, lost = guests.filter(g => g.badgeBack === "НЕТ").length;
+  $("glInfo").textContent = lists.length
+    ? "Бейджей на руках: " + onHand + (lost ? " · не вернули: " + lost : "") + " · нажмите на список, чтобы изменить"
+    : "Списки не загружены: приложение просто записывает всех. Загрузите Guest list и/или Vendors check list (.xlsm / .xlsx).";
+  $("loadBtn").textContent = lists.length ? "➕ Добавить ещё список" : "📥 Загрузить список (Excel)";
+}
+async function editList(id){
+  const l = listById(id); if (!l) return;
+  const r = await ask(l.file, (l.sheet ? "Лист «" + l.sheet + "» · " : "") + l.items.length + " человек\nТип: " + KIND[l.kind] + (l.badge ? " — выдаём бейдж" : " — без бейджа"), [
+    { label: "➕ Добавить человека в этот список", value: "add", cls: "main" },
+    { label: l.kind === "staff" ? "Сделать списком ГОСТЕЙ (без бейджа)" : "Сделать списком СОТРУДНИКОВ (с бейджем)", value: "kind" },
+    { label: l.badge ? "Не спрашивать бейдж" : "Спрашивать номер бейджа", value: "badge" },
+    { label: "Удалить этот список", value: "del", cls: "red" },
+    { label: "Отмена", value: 0, cls: "plain" }]);
+  if (r.value === "add"){
+    const a = await ask("Новый человек в «" + l.file + "»", "Формат как в Excel: Фамилия, Имя", [{ label: "Добавить", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }], "");
+    if (!a.value || !a.input) return;
+    const row = l.items.reduce((m, e) => Math.max(m, e.row || 0), 1) + 1;
+    l.items.push({ id: l.id + "_M" + newId(), row, name: a.input, color: "", deny: false });
+    dirty = true; persist(); tab = "list"; render(); setStatus("✅ Добавлен в «" + l.file + "»: " + a.input); return;
+  }
+  else if (r.value === "kind"){ l.kind = l.kind === "staff" ? "guest" : "staff"; l.badge = l.kind === "staff"; }
+  else if (r.value === "badge") l.badge = !l.badge;
+  else if (r.value === "del"){
+    const c = await ask("Удалить список «" + l.file + "»?", "Записи входа/выхода останутся.", [{ label: "Да, удалить", value: 1, cls: "red" }, { label: "Отмена", value: 0, cls: "plain" }]);
+    if (!c.value) return;
+    lists = lists.filter(x => x.id !== id);
+  } else return;
+  persist(); render();
+}
+function render(){
+  renderLists();
+  $("sIn").textContent = guests.filter(g => g.in && !g.out).length;
+  $("sAll").textContent = guests.filter(g => g.in).length;
+  $("sOut").textContent = guests.filter(g => g.out).length;
+  const came = new Set(guests.filter(g => g.in && g.listId).map(g => g.listId));
+  $("sNoBox").style.display = lists.length ? "block" : "none";
+  $("sNo").textContent = allEntries().filter(x => !came.has(x.e.id) && !x.e.deny).length;
+  if (!lists.length) tab = "rec";
+  $("tRec").classList.toggle("on", tab === "rec");
+  $("tList").classList.toggle("on", tab === "list");
+  $("tList").style.display = lists.length ? "" : "none";
+
+  const raw = $("search").value.trim(), q = norm(raw);
+  const list = $("list");
+  let items = [];
+  if (tab === "rec"){
+    let rows = guests.slice().sort((a, b) => ((b.out > b.in ? b.out : b.in) || "").localeCompare((a.out > a.in ? a.out : a.in) || ""));
+    if (q) rows = rows.filter(g => norm(g.name).includes(q) || norm(g.scanned).includes(q) || g.badge === raw);
+    items = rows.map(g => {
+      const d = row(g.name, timesOf(g), { inside: g.in && !g.out, deny: g.deny, color: g.color, tags: recTags(g) });
+      d.onclick = () => editGuest(g.id);
+      return d;
+    });
+    if (!items.length){ const e = document.createElement("div"); e.className = "empty"; e.textContent = q ? "Никого не найдено." : "Пока никого. Отсканируйте первого человека."; items = [e]; }
+  } else {
+    let rows = allEntries();
+    if (q) rows = rows.filter(x => norm(x.e.name).includes(q));
+    items = rows.map(({ e, l }) => {
+      const rs = recsOf(e), last = rs[rs.length - 1], inside = rs.some(g => g.in && !g.out);
+      const tags = [tag(l.kind === "staff" ? "ks" : "kg", KIND[l.kind])];
+      if (e.deny) tags.push(tag("deny", "чёрный список"));
+      if (!rs.some(g => g.in) && !e.deny) tags.push(tag("no", "не пришёл"));
+      if (last && last.badge) tags.push(tag(last.out && last.badgeBack === "НЕТ" ? "deny" : "bd", "№ " + last.badge + (last.out ? (last.badgeBack === "НЕТ" ? " не вернул" : " ✓") : "")));
+      const d = row(e.name, timesOf(last), { inside, deny: e.deny, color: e.color, tags });
+      d.onclick = () => editEntry(e.id);
+      return d;
+    });
+    if (!items.length){ const e = document.createElement("div"); e.className = "empty"; e.textContent = "Никого не найдено."; items = [e]; }
+  }
+  const more = items.length > 300 ? items.length - 300 : 0;
+  list.replaceChildren(...items.slice(0, 300));
+  if (more){ const e = document.createElement("div"); e.className = "empty"; e.textContent = "…и ещё " + more + ". Используйте поиск."; list.append(e); }
+}
+$("search").addEventListener("input", render);
+$("tRec").addEventListener("click", () => { tab = "rec"; render(); });
+$("tList").addEventListener("click", () => { tab = "list"; render(); });
+
+async function editGuest(id){
+  const g = guests.find(x => x.id === id); if (!g) return;
+  const info = (g.kind ? KIND[g.kind] + "\n" : "") + (g.in ? "Вход: " + g.in : "Без входа") + "\n" + (g.out ? "Выход: " + g.out : "Ещё внутри") +
+    (g.badge ? "\nБейдж № " + g.badge + (g.out ? (g.badgeBack === "НЕТ" ? " — НЕ вернул" : " — вернул") : " — на руках") : "") +
+    (g.scanned && g.scanned !== g.name ? "\nОтсканировано: " + g.scanned : "");
+  const btns = [{ label: "Сохранить имя", value: "save", cls: "main" }];
+  if (g.in && !g.out) btns.push({ label: "⬆ Отметить выход сейчас", value: "out", cls: "blue" });
+  if (g.out && g.in) btns.push({ label: "Отменить выход (снова внутри)", value: "unout" });
+  if (g.out && g.badge && g.badgeBack === "НЕТ") btns.push({ label: "✅ Бейдж № " + g.badge + " вернули позже", value: "back" });
+  btns.push({ label: g.badge ? "Изменить номер бейджа" : "Добавить номер бейджа", value: "badge" });
+  btns.push({ label: "Удалить запись", value: "del", cls: "red" }, { label: "Отмена", value: 0, cls: "plain" });
+  const r = await ask("Запись", info, btns, g.name);
+  if (r.value === "save" && r.input){ g.name = r.input; done("Имя исправлено: " + g.name); }
+  else if (r.value === "out") await checkout(g);
+  else if (r.value === "unout"){ g.out = ""; g.badgeBack = ""; done("Выход отменён: " + g.name); }
+  else if (r.value === "back"){ g.badgeBack = stamp(); done("✅ Бейдж № " + g.badge + " возвращён: " + g.name); }
+  else if (r.value === "badge"){
+    const b = await ask("Номер бейджа", g.name, [{ label: "Сохранить", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }], g.badge || "", { numeric: true });
+    if (b.value){ g.badge = b.input; done("Бейдж сохранён: " + g.name + (g.badge ? " № " + g.badge : "")); }
+  }
+  else if (r.value === "del"){
+    const c = await ask("Удалить «" + g.name + "»?", "", [{ label: "Да, удалить", value: 1, cls: "red" }, { label: "Отмена", value: 0, cls: "plain" }]);
+    if (c.value){ guests = guests.filter(x => x.id !== id); done("Удалено: " + g.name); }
+  }
+}
+async function editEntry(id){
+  const hit = entryById(id); if (!hit) return;
+  const e = hit.e, l = hit.l;
+  const rs = recsOf(e).filter(g => g.in);
+  const info = KIND[l.kind] + " · " + l.file + " · строка " + e.row + (rs.length ? "\n" + rs.map(g => "Вход " + hm(g.in) + (g.out ? ", выход " + hm(g.out) : " — внутри") + (g.badge ? ", бейдж " + g.badge : "")).join("\n") : "\nЕщё не приходил");
+  const btns = [];
+  if (!rs.some(g => !g.out)) btns.push({ label: "⬇ Отметить вход вручную", value: "in", cls: "main" });
+  btns.push({ label: e.deny ? "Убрать из чёрного списка" : "⛔ Добавить в чёрный список", value: "deny", cls: e.deny ? "" : "red" });
+  btns.push({ label: "🗑 Убрать из списка", value: "rm" });
+  btns.push({ label: "Отмена", value: 0, cls: "plain" });
+  const r = await ask(e.name, info, btns, null, { danger: e.deny });
+  if (r.value === "rm"){
+    const c = await ask("Убрать «" + e.name + "» из списка?", "Записи входа/выхода останутся.", [{ label: "Да, убрать", value: 1, cls: "red" }, { label: "Отмена", value: 0, cls: "plain" }]);
+    if (c.value){ l.items = l.items.filter(x => x.id !== e.id); done("Убран из списка: " + e.name); }
+    return;
+  }
+  if (r.value === "in") await admit(e.name, hit);
+  else if (r.value === "deny"){ e.deny = !e.deny; done((e.deny ? "⛔ В чёрном списке: " : "Убран из чёрного списка: ") + e.name); }
+}
+
+/* ===== ZIP / Excel без интернета ===== */
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b){ let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files){
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  for (const [name, text] of Object.entries(files)){
+    const nb = enc.encode(name), data = enc.encode(text), crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint32(14, crc, true);
+    lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, nb.length, true);
+    parts.push(lh, nb, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint32(16, crc, true);
+    ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, nb.length, true); ch.setUint32(42, off, true);
+    central.push(ch, nb);
+    off += 30 + nb.length + data.length;
+  }
+  const size = central.reduce((s, p) => s + p.byteLength, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, Object.keys(files).length, true); end.setUint16(10, Object.keys(files).length, true);
+  end.setUint32(12, size, true); end.setUint32(16, off, true);
+  return new Blob([...parts, ...central, end], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+}
+function xe(s){ return String(s == null ? "" : s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "").replace(/[<>&"]/g, c => ({ "<":"&lt;", ">":"&gt;", "&":"&amp;", '"':"&quot;" }[c])); }
+// sheets: [{name, widths:[..], rows:[[..]], fills:[hex|""] (по строкам)}]
+function makeXlsx(sheets){
+  const NS = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
+  const H = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  const colors = [];
+  sheets.forEach(sh => (sh.fills || []).forEach(c => { if (c && !colors.includes(c)) colors.push(c); }));
+  const fillXml = colors.map(c => '<fill><patternFill patternType="solid"><fgColor rgb="FF' + c.replace("#", "").toUpperCase() + '"/><bgColor indexed="64"/></patternFill></fill>').join("");
+  const xfXml = colors.map((c, i) => '<xf numFmtId="0" fontId="0" fillId="' + (i + 2) + '" borderId="0" xfId="0" applyFill="1"/>').join("");
+  const files = {
+    "[Content_Types].xml": H + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+      sheets.map((s, i) => '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join("") +
+      '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>',
+    "_rels/.rels": H + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
+    "xl/workbook.xml": H + '<workbook ' + NS + ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
+      sheets.map((s, i) => '<sheet name="' + xe(s.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>').join("") + '</sheets></workbook>',
+    "xl/_rels/workbook.xml.rels": H + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      sheets.map((s, i) => '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>').join("") +
+      '<Relationship Id="rIdS" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>',
+    "xl/styles.xml": H + '<styleSheet ' + NS + '><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="' + (2 + colors.length) + '"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>' + fillXml + '</fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="' + (2 + colors.length) + '"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>' + xfXml + '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'
+  };
+  sheets.forEach((sh, si) => {
+    const data = sh.rows.map((r, ri) => {
+      const c = ri === 0 ? 1 : (sh.fills && sh.fills[ri] ? colors.indexOf(sh.fills[ri]) + 2 : 0);
+      return '<row r="' + (ri + 1) + '">' + r.map((v, ci) => '<c r="' + String.fromCharCode(65 + ci) + (ri + 1) + '"' + (c ? ' s="' + c + '"' : '') +
+        ' t="inlineStr"><is><t xml:space="preserve">' + xe(v) + '</t></is></c>').join("") + '</row>';
+    }).join("");
+    files["xl/worksheets/sheet" + (si + 1) + ".xml"] = H + '<worksheet ' + NS + '><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>' +
+      sh.widths.map((w, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>').join("") + '</cols><sheetData>' + data + '</sheetData></worksheet>';
+  });
+  return zipStore(files);
+}
+
+/* чтение .xlsx / .xlsm (список гостей) — без интернета */
+async function readZip(buf){
+  const dv = new DataView(buf), u8 = new Uint8Array(buf);
+  let e = -1;
+  for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 70000); i--) if (dv.getUint32(i, true) === 0x06054b50){ e = i; break; }
+  if (e < 0) throw new Error("это не Excel-файл");
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true);
+  const dec = new TextDecoder(), files = {};
+  for (let k = 0; k < n; k++){
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+    const nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
+    const name = dec.decode(u8.subarray(p + 46, p + 46 + nl));
+    const start = lo + 30 + dv.getUint16(lo + 26, true) + dv.getUint16(lo + 28, true);
+    files[name] = { method, data: u8.subarray(start, start + csize) };
+    p += 46 + nl + el + cl;
+  }
+  return async name => {
+    const f = files[name] || files[Object.keys(files).find(k => k.toLowerCase() === name.toLowerCase())];
+    if (!f) return null;
+    if (f.method === 0) return dec.decode(f.data);
+    if (!window.DecompressionStream) throw new Error("обновите Chrome, чтобы открыть Excel");
+    const out = await new Response(new Blob([f.data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer();
+    return dec.decode(out);
+  };
+}
+const xml = s => new DOMParser().parseFromString(s, "application/xml");
+const kids = (el, tag) => Array.from(el.getElementsByTagNameNS("*", tag));
+function colIdx(ref){ const m = /^[A-Z]+/.exec(ref || "A")[0]; let n = 0; for (const ch of m) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; }
+const INDEXED = { 2:"FF0000", 3:"00FF00", 4:"0000FF", 5:"FFFF00", 6:"FF00FF", 7:"00FFFF", 10:"FF0000", 11:"00FF00", 12:"0000FF", 13:"FFFF00", 14:"FF00FF", 15:"00FFFF", 16:"800000", 17:"008000", 22:"C0C0C0", 45:"FF9900", 51:"FFCC00", 52:"FF9900", 53:"FF6600", 43:"99CC00" };
+function tint(hex, t){
+  if (!t) return hex;
+  const c = [0, 2, 4].map(i => parseInt(hex.substr(i, 2), 16)).map(v => Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)));
+  return c.map(v => v.toString(16).padStart(2, "0")).join("").toUpperCase();
+}
+function isRed(hex){
+  if (!hex) return false;
+  const r = parseInt(hex.substr(0, 2), 16), g = parseInt(hex.substr(2, 2), 16), b = parseInt(hex.substr(4, 2), 16);
+  return r >= 180 && g <= 110 && b <= 110 && r - Math.max(g, b) >= 100;
+}
+async function parseExcel(buf){
+  const get = await readZip(buf);
+  const wb = xml(await get("xl/workbook.xml"));
+  const rels = xml(await get("xl/_rels/workbook.xml.rels") || "<r/>");
+  const relMap = {}; kids(rels, "Relationship").forEach(r => relMap[r.getAttribute("Id")] = r.getAttribute("Target"));
+  const sheets = kids(wb, "sheet").map(s => ({ name: s.getAttribute("name"),
+    target: relMap[s.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || s.getAttribute("r:id")] }));
+  const pick = sheets.find(s => /guest|гост|vendor|list|спис/i.test(s.name) && !/^scan$/i.test(s.name)) || sheets.find(s => !/^scan$/i.test(s.name)) || sheets[0];
+  if (!pick) throw new Error("в файле нет листов");
+  const path = pick.target.startsWith("/") ? pick.target.slice(1) : "xl/" + pick.target.replace(/^\.\//, "");
+  const sst = xml(await get("xl/sharedStrings.xml") || "<sst/>");
+  const strings = kids(sst, "si").map(si => kids(si, "t").map(t => t.textContent).join(""));
+  // цвета заливки
+  const theme = [];
+  const th = await get("xl/theme/theme1.xml");
+  if (th){
+    const cs = kids(xml(th), "clrScheme")[0];
+    if (cs){
+      const cols = Array.from(cs.children).map(c => { const x = c.firstElementChild; return x ? (x.getAttribute("lastClr") || x.getAttribute("val") || "") : ""; });
+      [1, 0, 3, 2, 4, 5, 6, 7, 8, 9, 10, 11].forEach((src, i) => theme[i] = cols[src] || "");
+    }
+  }
+  const st = xml(await get("xl/styles.xml") || "<s/>");
+  const fills = kids(st, "fill").map(f => {
+    const pf = kids(f, "patternFill")[0];
+    if (!pf || (pf.getAttribute("patternType") || "none") === "none") return "";
+    const fg = kids(pf, "fgColor")[0]; if (!fg) return "";
+    let hex = "";
+    if (fg.getAttribute("rgb")) hex = fg.getAttribute("rgb").slice(-6);
+    else if (fg.getAttribute("indexed")) hex = INDEXED[+fg.getAttribute("indexed")] || "";
+    else if (fg.getAttribute("theme")) hex = theme[+fg.getAttribute("theme")] || "";
+    return hex ? tint(hex.toUpperCase(), +(fg.getAttribute("tint") || 0)) : "";
+  });
+  const cellXfs = kids(st, "cellXfs")[0];
+  const xfFill = cellXfs ? kids(cellXfs, "xf").map(x => fills[+(x.getAttribute("fillId") || 0)] || "") : [];
+  const sh = xml(await get(path));
+  const rows = kids(sh, "row").map(r => {
+    const cells = {};
+    kids(r, "c").forEach(c => {
+      const t = c.getAttribute("t"), v = kids(c, "v")[0];
+      let val = t === "s" ? (strings[+(v && v.textContent)] || "") : t === "inlineStr" ? kids(c, "t").map(x => x.textContent).join("") : (v ? v.textContent : "");
+      cells[colIdx(c.getAttribute("r"))] = { val: String(val).trim(), color: xfFill[+(c.getAttribute("s") || 0)] || "" };
+    });
+    return { n: +r.getAttribute("r"), cells };
+  });
+  if (!rows.length) throw new Error("лист «" + pick.name + "» пустой");
+  let col = 0, first = 0;
+  const head = rows[0].cells;
+  const hc = Object.keys(head).find(k => /name|имя|фамил|ady|familiýa/i.test(head[k].val));
+  if (hc != null){ col = +hc; first = 1; }
+  const out = [];
+  rows.slice(first).forEach(r => {
+    const c = r.cells[col]; if (!c || !c.val) return;
+    out.push({ id: "L" + r.n + "_" + norm(c.val).slice(0, 12), row: r.n, name: c.val, color: c.color ? "#" + c.color : "", deny: isRed(c.color) });
+  });
+  return { sheet: pick.name, items: out, badgeHint: strings.some(x => /badge|бейдж/i.test(x)) || Object.values(head).some(c => /badge|бейдж/i.test(c.val)) };
+}
+function parseText(text){
+  const out = [];
+  text.split(/\r?\n/).forEach((line, i) => {
+    let v = line.split(/\t|;/)[0].replace(/^"|"$/g, "").trim();
+    if (!v || (i === 0 && /name|имя|фамил/i.test(v))) return;
+    out.push({ id: "L" + (i + 1) + "_" + norm(v).slice(0, 12), row: i + 1, name: v, color: "", deny: false });
+  });
+  return { sheet: "", items: out };
+}
+
+$("loadBtn").addEventListener("click", () => $("glFile").click());
+$("glFile").addEventListener("change", async ev => {
+  const f = ev.target.files[0]; ev.target.value = "";
+  if (!f) return;
+  setStatus("Читаю " + f.name + "…");
+  let res;
+  try {
+    const buf = await f.arrayBuffer();
+    const u = new Uint8Array(buf, 0, 2);
+    res = u[0] === 0x50 && u[1] === 0x4B ? await parseExcel(buf) : parseText(new TextDecoder().decode(buf));
+  } catch (err){ setStatus("⚠️ Не получилось прочитать файл: " + err.message); return; }
+  if (!res.items.length){ setStatus("⚠️ В файле не нашлось имён."); return; }
+  // тип списка: Vendors / сотрудники / есть колонка «Badge» → сотрудники с бейджем; иначе гости
+  const staff = /vendor|staff|employ|worker|сотруд|персонал|ishgar|işgär/i.test(f.name) || !!res.badgeHint;
+  const file = f.name.replace(/\.(xlsx|xlsm|xls|csv|txt)$/i, "").replace(/[_]+/g, " ");
+  const same = lists.find(l => l.file === file);
+  const dn = res.items.filter(x => x.deny).length;
+  const r = await ask("Добавить список?", f.name + (res.sheet ? " · лист «" + res.sheet + "»" : "") + "\nЛюдей: " + res.items.length + (dn ? "\n⛔ Чёрный список (красные): " + dn : "") +
+    "\nТип: " + (staff ? "🛠 СОТРУДНИКИ — выдаём бейдж" : "👥 ГОСТИ — без бейджа") +
+    "\n\nПервые: " + res.items.slice(0, 3).map(x => x.name).join("; ") + (same ? "\n\nСписок «" + file + "» уже загружен — он будет заменён." : ""),
+    [{ label: staff ? "Загрузить как СОТРУДНИКОВ (с бейджем)" : "Загрузить как ГОСТЕЙ (без бейджа)", value: staff ? "staff" : "guest", cls: "main" },
+     { label: staff ? "Нет, это гости (без бейджа)" : "Нет, это сотрудники (с бейджем)", value: staff ? "guest" : "staff" },
+     { label: "Отмена", value: 0, cls: "plain" }]);
+  if (!r.value){ setStatus(""); return; }
+  const id = same ? same.id : "L" + newId();
+  const lst = { id, file, sheet: res.sheet, kind: r.value, badge: r.value === "staff",
+    items: res.items.map(x => Object.assign({}, x, { id: id + "_" + x.id })) };
+  if (same) lists = lists.map(l => l.id === id ? lst : l); else lists.push(lst);
+  // привязать уже сделанные записи к спискам
+  guests.forEach(g => {
+    if (g.listId && entryById(g.listId)) return;
+    const m = lst.items.find(x => norm(x.name) === norm(g.name));
+    if (m){ g.listId = m.id; g.lst = id; g.kind = lst.kind; g.deny = m.deny; g.color = m.color; g.nil = false; }
+  });
+  persist(); tab = "list"; render();
+  setStatus("✅ Загружен: " + file + " — " + lst.items.length + " (" + KIND[lst.kind].toLowerCase() + (lst.kind === "staff" ? "и" : "и") + ")" + (dn ? ", в чёрном списке " + dn : ""));
+});
+
+/* ===== ВЫГРУЗКА ===== */
+$("exportBtn").addEventListener("click", async () => {
+  if (!guests.length && !lists.length){ setStatus("Пусто — нечего выгружать."); return; }
+  const recs = guests.slice().sort((a, b) => ((a.in || a.out) || "").localeCompare((b.in || b.out) || ""));
+  const note = g => g.deny ? "DENY LIST" : g.nil ? "Not in list" : "";
+  const kindEn = k => k === "staff" ? "Vendor" : k === "guest" ? "Guest" : "";
+  const back = g => !g.badge ? "" : !g.out ? "On hand" : g.badgeBack === "НЕТ" ? "NOT RETURNED" : "Returned " + (g.badgeBack || "").slice(11);
+  const fillOf = (deny, color, nil) => deny ? "FF0000" : (color || "").replace("#", "") || (nil ? "FFC000" : "");
+  const sheets = [{
+    name: "SCAN", widths: [34, 10, 21, 21, 14, 20, 16],
+    rows: [["Name, Surname", "List", "Arrived Time", "Departure Time", "Badge number", "Badge", "Note"]]
+      .concat(recs.map(g => [g.name, kindEn(g.kind), g.in, g.out, g.badge || "", back(g), note(g)])),
+    fills: [""].concat(recs.map(g => fillOf(g.deny, g.color, g.nil)))
+  }];
+  const used = new Set(["SCAN"]);
+  lists.forEach(l => {
+    let nm = (l.file || "List").replace(/[\\\/\?\*\[\]:]/g, " ").slice(0, 28).trim() || "List";
+    let n2 = nm, k = 2; while (used.has(n2.toUpperCase())) n2 = nm.slice(0, 26) + " " + k++;
+    used.add(n2.toUpperCase());
+    const rows = l.items.map(e => {
+      const rs = recsOf(e).filter(g => g.in || g.out), last = rs[rs.length - 1];
+      const status = e.deny ? (rs.length ? "DENY LIST (entered)" : "DENY LIST") : !rs.length ? "Not arrived" : last.out ? "Left" : "Inside";
+      return { e, r: [e.name, status, last ? last.in : "", last ? last.out : "", last ? last.badge || "" : "", last ? back(last) : "", rs.length > 1 ? String(rs.length) : ""] };
+    });
+    sheets.push({ name: n2, widths: [34, 18, 21, 21, 14, 20, 8],
+      rows: [["Name, Surname", "Status", "Arrived Time", "Departure Time", "Badge number", "Badge", "Visits"]].concat(rows.map(x => x.r)),
+      fills: [""].concat(rows.map(x => fillOf(x.e.deny, x.e.color, false))) });
+  });
+  const blob = makeXlsx(sheets);
+  const d = new Date();
+  const fname = "GuestCheck_" + d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + "_" + pad2(d.getHours()) + pad2(d.getMinutes()) + ".xlsx";
+  const file = new File([blob], fname, { type: blob.type });
+  const canShare = navigator.canShare && navigator.canShare({ files: [file] });
+  const btns = [];
+  if (canShare) btns.push({ label: "📤 Отправить (Telegram, IMO, почта…)", value: "share", cls: "main" });
+  btns.push({ label: "💾 Сохранить в телефон (Загрузки)", value: "save", cls: canShare ? "" : "main" });
+  btns.push({ label: "Отмена", value: 0, cls: "plain" });
+  const lost = guests.filter(g => g.badge && (g.badgeBack === "НЕТ" || (g.in && !g.out))).length;
+  const r = await ask("Excel-файл готов", "Записей: " + guests.length + (lists.length ? " · списков: " + lists.length : "") + (lost ? "\n⚠️ Бейджей не возвращено: " + lost : "") + "\n" + fname, btns);
+  if (r.value === "share"){
+    try { await navigator.share({ files: [file], title: fname }); dirty = false; persist(); setStatus("✅ Файл отправлен: " + fname); }
+    catch (e){ if (e.name !== "AbortError") setStatus("Не получилось отправить: " + e.message + ". Попробуйте «Сохранить в телефон»."); }
+  } else if (r.value === "save"){
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = fname;
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    dirty = false; persist();
+    setStatus("✅ Сохранено в «Загрузки»: " + fname);
+  }
+});
+
+$("clearBtn").addEventListener("click", async () => {
+  if (!guests.length && !lists.length){ setStatus("Всё уже пусто."); return; }
+  const warn = dirty ? "⚠️ Последние изменения ещё НЕ выгружены в Excel!\nСначала нажмите «Скачать Excel»." : "Excel уже выгружен.";
+  const btns = [];
+  if (guests.length) btns.push({ label: "Удалить записи (списки оставить)", value: "rec", cls: "red" });
+  if (lists.length) btns.push({ label: "Удалить всё: записи и списки", value: "all", cls: "red" });
+  btns.push({ label: "Отмена", value: 0, cls: "plain" });
+  const r = await ask("Начать новый ивент?", "Записей: " + guests.length + (lists.length ? " · списков: " + lists.length : "") + "\n" + warn, btns);
+  if (!r.value) return;
+  if (dirty && guests.length){
+    const r2 = await ask("Точно удалить без Excel?", "Восстановить будет невозможно.",
+      [{ label: "Да, удалить", value: 1, cls: "red" }, { label: "Нет, сначала скачаю", value: 0, cls: "plain" }]);
+    if (!r2.value) return;
+  }
+  guests = [];
+  if (r.value === "all") lists = [];
+  dirty = false; persist(); tab = "rec"; render();
+  setStatus("Очищено. Можно начинать новый ивент.");
+});
+
+/* ===== работа без интернета ===== */
+async function checkOffline(){
+  const L = $("link");
+  if (!("serviceWorker" in navigator) || !window.caches){ L.className = "bad"; L.textContent = "● Этот браузер не умеет работать без интернета — откройте в Chrome"; return; }
+  try {
+    const keys = await caches.keys();
+    const name = keys.filter(k => k.startsWith("guestcheck-")).sort().pop();
+    const c = name && await caches.open(name);
+    const need = ["lib/tesseract.min.js", "lib/worker.min.js", "lib/core/tesseract-core-simd-lstm.wasm.js", "lib/core/tesseract-core-lstm.wasm.js", "lib/lang/eng.traineddata.gz", "index.html"];
+    let ok = 0;
+    if (c) for (const f of need) if (await c.match(new URL(f, location.href).href, { ignoreSearch: true })) ok++;
+    if (ok === need.length){ L.className = "ok"; L.textContent = "● Готово к работе без интернета · данные хранятся в телефоне"; return true; }
+    L.className = "bad"; L.textContent = "● Загружаю файлы для работы без интернета… " + ok + "/" + need.length + " (не закрывайте)";
+  } catch (e){ L.className = "bad"; L.textContent = "● Проверка не удалась: " + e.message; }
+  return false;
+}
+if ("serviceWorker" in navigator && window.isSecureContext){
+  navigator.serviceWorker.register("sw.js").catch(e => console.warn(e));
+}
+(async () => { for (let i = 0; i < 120; i++){ if (await checkOffline()) break; await sleep(2000); } })();
+
+setMode(mode);
+render();
+</script>
+</body>
+</html>
