@@ -60,6 +60,26 @@ body.out #sendBtn{background:var(--blue)}
 .fbtns button{flex:1;padding:12px 6px;border-radius:12px;border:0;font-size:15px;font-weight:600;background:#333;color:#fff}
 .fbtns #badgeBtn{background:#1565c0}
 #xl{margin-top:8px;display:grid;gap:6px}
+#xv{background:#fff;color:#000;display:none;flex-direction:column;z-index:20}
+#xv.on{display:flex}
+.xvbar{display:flex;align-items:center;gap:8px;background:#1d6f42;color:#fff;padding:10px;padding-top:calc(10px + env(safe-area-inset-top))}
+.xvt{flex:1;min-width:0;font-weight:600;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xvi{font-size:12px;opacity:.85;white-space:nowrap}
+.xvbar .xic{background:#fff;color:#1d6f42}
+.xvbar .xm{background:rgba(255,255,255,.2)}
+.xvx{width:40px;height:36px;border:0;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;font-size:20px}
+#xvGrid{flex:1;overflow:auto;background:#fff;-webkit-overflow-scrolling:touch}
+#xvGrid table{border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:14px}
+#xvGrid th,#xvGrid td{border:1px solid #d4d4d4;padding:4px 6px;white-space:nowrap;text-align:left}
+#xvGrid th{background:#f3f3f3;color:#555;font-weight:400;text-align:center;position:sticky;top:0;z-index:1}
+#xvGrid .rn{background:#f3f3f3;color:#555;text-align:center;min-width:34px;position:sticky;left:0;z-index:1}
+#xvGrid th.rn{z-index:2}
+#xvGrid tr.hd td{font-weight:700;position:sticky;top:27px;background:#fff}
+#xvGrid tr.hd td.rn{background:#f3f3f3;z-index:2}
+#xvGrid .xvempty{color:#888;text-align:center;padding:20px}
+#xvTabs{display:flex;gap:2px;background:#e9e9e9;padding:4px 4px calc(4px + env(safe-area-inset-bottom));overflow-x:auto}
+#xvTabs button{border:0;background:transparent;padding:8px 14px;font-size:14px;color:#333;white-space:nowrap;border-bottom:3px solid transparent}
+#xvTabs button.on{background:#fff;color:#1d6f42;font-weight:700;border-bottom-color:#1d6f42}
 .xrow{display:flex;align-items:center;gap:10px;background:#1e1e1e;border:1px solid #333;border-radius:12px;padding:6px 6px 6px 10px;text-align:left;cursor:pointer}
 .xic{width:28px;height:28px;border-radius:6px;background:#1d6f42;color:#fff;font-weight:800;display:grid;place-items:center;font-size:15px;flex:none}
 .xt{flex:1;min-width:0;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -161,6 +181,12 @@ footer{position:fixed;left:0;right:0;bottom:0;background:#000;padding:10px 14px 
   <div id="xl"></div>
   <div class="fbtns"><button id="badgeBtn">🔖 Вернуть бейдж</button><button id="clearBtn">🗑 Новый ивент</button></div>
 </footer>
+
+<div class="screen" id="xv">
+  <div class="xvbar"><span class="xic">X</span><span id="xvTitle" class="xvt"></span><span id="xvInfo" class="xvi"></span><button id="xvMenu" class="xm">⋮</button><button id="xvClose" class="xvx">✕</button></div>
+  <div id="xvGrid"></div>
+  <div id="xvTabs"></div>
+</div>
 
 <div class="modal" id="modal"><div class="box">
   <div id="mTitle"></div><div id="mText"></div><div id="mBody"></div><div id="mBtns"></div>
@@ -1357,7 +1383,7 @@ $("glFile").addEventListener("change", async ev => {
 
 /* ===== ВЫГРУЗКА: гости, сотрудники или всё — отдельными файлами ===== */
 const recKind = g => g.kind === "staff" ? "staff" : "guest";
-function buildXlsx(kind){
+function buildSheets(kind){
   const recs = guests.filter(g => kind === "all" || recKind(g) === kind).sort((a, b) => ((a.in || a.out) || "").localeCompare((b.in || b.out) || ""));
   const note = g => g.deny ? "DENY LIST" : g.nil ? "Not in list" : "";
   const kindEn = k => k === "staff" ? "Vendor" : k === "guest" ? "Guest" : "";
@@ -1387,8 +1413,9 @@ function buildXlsx(kind){
   });
   const d = new Date();
   const fname = { guest: "Guests", staff: "Vendors", all: "GuestCheck" }[kind] + "_" + d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + "_" + pad2(d.getHours()) + pad2(d.getMinutes()) + ".xlsx";
-  return { blob: makeXlsx(sheets), fname, count: recs.length };
+  return { sheets, fname, count: recs.length };
 }
+function buildXlsx(kind){ const x = buildSheets(kind); return { blob: makeXlsx(x.sheets), fname: x.fname, count: x.count }; }
 async function deliver(x, how){
   const file = new File([x.blob], x.fname, { type: x.blob.type });
   if (how === "share"){
@@ -1416,7 +1443,8 @@ function renderXl(){
     const c = document.createElement("span"); c.className = "xc"; c.textContent = "пришло " + n;
     const m = document.createElement("button"); m.className = "xm"; m.textContent = "⋮"; m.setAttribute("aria-label", "Меню");
     d.append(ic, t, c, m);
-    d.onclick = () => xlMenu(kind, title);
+    m.onclick = ev => { ev.stopPropagation(); xlMenu(kind, title); };
+    d.onclick = () => openXl(kind, title);
     return d;
   };
   if (!lists.length && !hasStaff) rows.push(mk("all", "GuestCheck.xlsx"));
@@ -1438,17 +1466,63 @@ async function xlMenu(kind, title){
   const share = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob(["x"])], "t.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })] }));
   const lost = kind !== "guest" ? guests.filter(g => (kind === "all" || recKind(g) === kind) && g.badge && (g.badgeBack === "НЕТ" || (g.in && !g.out))).length : 0;
   const lst = lists.find(l => l.kind === kind);
-  const btns = [{ label: "💾 Скачать Excel", value: "save", cls: "main" }];
+  const btns = [{ label: "👁 Открыть Excel", value: "view", cls: "main" }, { label: "💾 Скачать Excel", value: "save" }];
   if (share) btns.push({ label: "📤 Отправить Excel (Telegram, IMO, почта…)", value: "share" });
-  if (lst) btns.push({ label: "📋 Открыть список", value: "open" });
   btns.push({ label: "Отмена", value: 0, cls: "plain" });
   const r = await ask(title, (kind === "staff" ? "Сотрудники" : kind === "guest" ? "Гости" : "Все записи") + (lost ? "\n⚠️ Бейджей ещё не вернули: " + lost : ""), btns);
-  if (r.value === "open"){ tab = "list:" + lst.id; $("search").value = ""; render(); $("tabs").scrollIntoView({ behavior: "smooth" }); return; }
+  if (r.value === "view") return openXl(kind, title);
   if (r.value === "save" || r.value === "share"){
     const ok = await deliver(buildXlsx(kind), r.value);
     if (ok){ dirty = false; persist(); }
   }
 }
+
+/* ===== просмотр Excel прямо в телефоне (как в Excel: колонки A B C, листы внизу) ===== */
+let xv = null;
+function openXl(kind, title){
+  xv = { kind, title, x: buildSheets(kind), sheet: 0 };
+  $("xvTitle").textContent = title;
+  drawXl();
+  $("xv").classList.add("on");
+  history.pushState({ xv: 1 }, "");
+}
+function closeXl(){ if ($("xv").classList.contains("on")){ $("xv").classList.remove("on"); xv = null; } }
+function drawXl(){
+  const sh = xv.x.sheets[xv.sheet];
+  const tbl = document.createElement("table");
+  const head = document.createElement("tr");
+  const corner = document.createElement("th"); corner.className = "rn"; head.append(corner);
+  sh.rows[0].forEach((_, i) => { const th = document.createElement("th"); th.textContent = String.fromCharCode(65 + i); head.append(th); });
+  tbl.append(head);
+  sh.rows.forEach((r, ri) => {
+    const tr = document.createElement("tr");
+    if (ri === 0) tr.className = "hd";
+    const rn = document.createElement("td"); rn.className = "rn"; rn.textContent = ri + 1; tr.append(rn);
+    const fill = ri > 0 && sh.fills && sh.fills[ri] ? "#" + sh.fills[ri] : "";
+    r.forEach((v, ci) => {
+      const td = document.createElement("td"); td.textContent = v;
+      td.style.minWidth = Math.round((sh.widths[ci] || 12) * 7) + "px";
+      if (fill){ td.style.background = fill; if (/^#?FF0000$/i.test(fill)) td.style.color = "#fff"; }
+      tr.append(td);
+    });
+    tbl.append(tr);
+  });
+  if (sh.rows.length === 1){
+    const tr = document.createElement("tr"); const td = document.createElement("td"); td.colSpan = sh.rows[0].length + 1; td.className = "xvempty";
+    td.textContent = "Пока пусто — здесь появятся те, кто пришёл."; tr.append(td); tbl.append(tr);
+  }
+  $("xvGrid").replaceChildren(tbl);
+  $("xvGrid").scrollTo(0, 0);
+  $("xvTabs").replaceChildren(...xv.x.sheets.map((s2, i) => {
+    const b = document.createElement("button"); b.textContent = s2.name; if (i === xv.sheet) b.className = "on";
+    b.onclick = () => { xv.sheet = i; drawXl(); };
+    return b;
+  }));
+  $("xvInfo").textContent = (sh.rows.length - 1) + " строк";
+}
+$("xvClose").addEventListener("click", () => history.back());
+$("xvMenu").addEventListener("click", () => { const k = xv.kind, t = xv.title; xlMenu(k, t).then(() => {}); });
+window.addEventListener("popstate", () => closeXl());
 
 /* ===== возврат бейджа по номеру ===== */
 async function returnBadge(num){
