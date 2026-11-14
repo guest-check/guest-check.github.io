@@ -17,6 +17,11 @@
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,Roboto,Arial,sans-serif}
 header{background:var(--bar);padding:16px;font-size:22px;font-weight:600;display:flex;align-items:center;gap:10px}
 header small{margin-left:auto;font-size:14px;font-weight:400;color:var(--mut)}
+.hbtns{margin-left:auto;display:flex;gap:8px;align-items:center}
+#sndBtn{width:40px;height:36px;border:0;border-radius:10px;background:#444;font-size:18px}
+.langs{display:flex;background:#444;border-radius:10px;padding:3px;gap:2px}
+.langs button{border:0;background:transparent;color:var(--mut);font-size:14px;font-weight:700;padding:6px 9px;border-radius:8px}
+.langs button.on{background:var(--org);color:#fff}
 main{padding:12px 12px 330px}
 .seg{display:flex;gap:8px;margin-bottom:12px}
 .seg button{flex:1;padding:14px 8px;font-size:19px;font-weight:700;border-radius:14px;border:2px solid #666;background:transparent;color:var(--mut)}
@@ -153,7 +158,7 @@ footer{position:fixed;left:0;right:0;bottom:0;background:#000;padding:10px 14px 
 </head>
 <body>
 
-<header>✔ GuestCheck <small id="evName"></small></header>
+<header>✔ GuestCheck <span class="hbtns"><button id="sndBtn" aria-label="Звук">🔊</button><span class="langs"><button data-l="tk">TM</button><button data-l="ru">RU</button><button data-l="en">EN</button></span></span></header>
 
 <main>
   <div class="seg"><button id="mIn">⬇ Вход</button><button id="mOut">⬆ Выход</button></div>
@@ -232,6 +237,20 @@ footer{position:fixed;left:0;right:0;bottom:0;background:#000;padding:10px 14px 
 
 <script src="lib/tesseract.min.js"></script>
 <script>
+/* ===== ЯЗЫК (TM / RU / EN) ===== */
+const LANG = (() => { try { const l = localStorage.getItem("lang"); if (l === "tk" || l === "ru" || l === "en") return l; } catch (e) {}
+  return "ru"; })();
+const I18N = { tk: {"Наведите на текст и нажмите на экран": "Teksti nyşana alyň we ekrana basyň", " (камера ": " (kamera ", "Живая камера работает только по https. Открываю обычную камеру.": "Göni kamera diňe https arkaly işleýär. Adaty kamerany açýaryn.", "Камера недоступна (": "Kamera elýeterli däl (", "). Открываю обычную камеру.": "). Adaty kamerany açýaryn.", "Не удалось переключить камеру": "Kamerany çalşyp bolmady", "Резко — можно снимать": "Aýdyň — surata alyp bolýar", "Размыто: отодвиньте телефон на 20–25 см или нажмите 2×": "Bulaşyk: telefony 20–25 sm daşlaşdyryň ýa-da 2× basyň", "Фокусировка… держите телефон неподвижно": "Fokus… telefony hereketsiz saklaň", "Ищу текст…": "Tekst gözleýärin…", "Ищу текст… ещё раз": "Tekst gözleýärin… ýene bir gezek", "Текст не найден. Нажмите ↻ и снимите с 20–25 см, при хорошем свете.": "Tekst tapylmady. ↻ basyň we 20–25 sm aralykdan, gowy ýagtylykda surata alyň.", "Снимок размытый — лучше нажать ↻ и переснять.": "Surat bulaşyk — ↻ basyp täzeden alsaňyz gowy.", "Ошибка распознавания: ": "Tanamak ýalňyşlygy: ", "Нажмите на нужные слова": "Gerekli sözlere basyň", "Сначала нажмите на слово (станет розовым)": "Ilki söze basyň (gyzgylt bolar)", "Проверьте текст и нажмите ➤, чтобы сохранить.": "Teksti barlaň we ýatda saklamak üçin ➤ basyň.", "⚠️ Не получилось сохранить в телефон! Скачайте Excel прямо сейчас.": "⚠️ Telefona ýazyp bolmady! Excel-i häziriň özünde ýükläň.", "Гость": "Myhman", "Сотрудник": "Işgär", "Например: 15": "Mysal üçin: 15", "ФАМИЛИЯ ИМЯ — ВХОД": "FAMILIÝA ADY — GIRIŞ", "ФАМИЛИЯ ИМЯ / № БЕЙДЖА — ВЫХОД": "FAMILIÝA ADY / BEJIK № — ÇYKYŞ", "имя или номер бейджа": "ady ýa-da bejik belgisi", "⛔ ЧЁРНЫЙ СПИСОК": "⛔ GARA SANAW", "\nЭтот человек в чёрном списке. Не пускать!": "\nBu adam gara sanawda. Içeri goýbermäň!", "Не пускать": "Goýbermeli däl", "Всё равно впустить": "Barybir goýber", "⛔ Не впущен (чёрный список): ": "⛔ Goýberilmedi (gara sanaw): ", "Уже внутри!": "Eýýäm içerde!", "Уже приходил": "Eýýäm gelipdi", "\nВошёл в ": "\nGirdi: ", ", ушёл в ": ", çykdy: ", "\nБейдж № ": "\nBejik № ", "\nЗаписать вход ещё раз?": "\nGirişi ýene ýazmalymy?", "Записать ещё раз": "Ýene ýaz", "Отмена": "Ýatyr", "Выдайте бейдж: какой номер?": "Bejik beriň: haýsy belgi?", "Сохранить": "Ýatda sakla", "Без бейджа": "Bejiksiz", "Бейдж № ": "Bejik № ", " уже на руках": " eýýäm elde", " (вошёл ": " (girdi ", ") ещё не вернул его.": ") ony entek gaýtarmady.", "Ввести другой номер": "Başga belgi giriz", "Всё равно выдать": "Barybir ber", "✅ Вход: ": "✅ Giriş: ", " · бейдж № ": " · bejik № ", " (нет в списке)": " (sanawda ýok)", "Нет в списке!": "Sanawda ýok!", "» не найден ни в одном списке.": "» hiç bir sanawda tapylmady.", "Всё равно впустить (отметить «нет в списке»)": "Barybir goýber («sanawda ýok» diýip bellemek)", "Не впущен (нет в списке): ": "Goýberilmedi (sanawda ýok): ", " · уже внутри": " · eýýäm içerde", " · уже был": " · eýýäm bolupdy", "Никто из них — нет в списке": "Olaryň hiç biri — sanawda ýok", "Похожие: выберите номер": "Meňzeşler: belgini saýlaň", "Для «": "«", "» найдено: ": "» üçin tapyldy: ", "Заберите бейдж № ": "Bejigi alyň № ", "✅ Бейдж № ": "✅ Bejik № ", " вернул": " gaýtardy", "Бейдж НЕ вернул": "Bejigi gaýtarmady", "✅ Выход: ": "✅ Çykyş: ", " · ⚠️ бейдж № ": " · ⚠️ bejik № ", " НЕ вернул": " gaýtarmady", " возвращён": " gaýtaryldy", " не найден": " tapylmady", "Ни у кого внутри нет бейджа с этим номером.": "Içerdäkileriň hiç kiminde bu belgili bejik ýok.", "  (вошёл ": "  (girdi ", ", бейдж ": ", bejik ", "Нет в списке — записать выход отдельно": "Sanawda ýok — çykyşy aýratyn ýaz", "Кто уходит? Выберите номер": "Kim çykýar? Belgini saýlaň", "Не найден среди тех, кто внутри": "Içerdäkileriň arasynda tapylmady", "Похожие внутри для «": "Içerdäki meňzeşler «", "» не записан на вход (или уже вышел).": "» girişe ýazylmandyr (ýa-da eýýäm çykdy).", "✅ Выход (без входа): ": "✅ Çykyş (girişsiz): ", "Поле пустое: отсканируйте или впишите имя.": "Meýdan boş: skanirläň ýa-da adyny ýazyň.", "чёрный список": "gara sanaw", "нет в списке": "sanawda ýok", " не вернул": " gaýtarmady", "🛠 Сотрудники": "🛠 Işgärler", "👥 Гости": "👥 Myhmanlar", "с бейджем": "bejikli", "без бейджа": "bejiksiz", "Удалить список": "Sanawy poz", "Бейджей на руках: ": "Eldäki bejikler: ", " · не вернули: ": " · gaýtarylmadyk: ", " · нажмите на список, чтобы изменить": " · üýtgetmek üçin sanawa basyň", "Списки не загружены: приложение просто записывает всех. Загрузите Guest list и/или Vendors check list (.xlsm / .xlsx).": "Sanaw ýüklenmedi: programma ähli gelenleri ýazýar. Guest list we/ýa-da Vendors check list (.xlsm / .xlsx) ýükläň.", "➕ Добавить ещё список": "➕ Ýene sanaw goş", "📥 Загрузить список (Excel)": "📥 Sanaw ýükle (Excel)", "Вы действительно хотите удалить этот список?": "Bu sanawy hakykatdan pozmak isleýärsiňizmi?", " человек": " adam", "\nУже пришли: ": "\nEýýäm gelenler: ", " — их записи входа/выхода останутся.": " — olaryň giriş/çykyş ýazgylary galar.", "Да, удалить": "Hawa, poz", "Нет": "Ýok", "🗑 Список удалён: ": "🗑 Sanaw pozuldy: ", "Лист «": "Sahypa «", " человек\nТип: ": " adam\nGörnüşi: ", " — выдаём бейдж": " — bejik berýäris", " — без бейджа": " — bejiksiz", "📋 Показать весь список (кто пришёл и кто нет)": "📋 Tutuş sanawy görkez (kim geldi we kim gelmedi)", "➕ Добавить человека в этот список": "➕ Bu sanawa adam goş", "Сделать списком ГОСТЕЙ (без бейджа)": "MYHMANLAR sanawy et (bejiksiz)", "Сделать списком СОТРУДНИКОВ (с бейджем)": "IŞGÄRLER sanawy et (bejikli)", "Не спрашивать бейдж": "Bejik soramaly däl", "Спрашивать номер бейджа": "Bejik belgisini sora", "Удалить этот список": "Bu sanawy poz", "Новый человек в «": "Täze adam «", "Формат как в Excel: Фамилия, Имя": "Excel-däki ýaly: Familiýa, Ady", "Добавить": "Goş", "✅ Добавлен в «": "✅ Goşuldy «", "Удалить список «": "Sanawy pozmalymy «", "Записи входа/выхода останутся.": "Giriş/çykyş ýazgylary galar.", "👥 Гости · ": "👥 Myhmanlar · ", "🛠 Сотрудники · ": "🛠 Işgärler · ", "Никого не найдено.": "Hiç kim tapylmady.", "Сотрудники ещё не приходили.": "Işgärler entek gelmedi.", "Пока никто не пришёл. Отсканируйте первого гостя.": "Entek hiç kim gelmedi. Ilkinji myhmany skanirläň.", "📋 Весь список: ": "📋 Tutuş sanaw: ", "✕ Закрыть": "✕ Ýap", "не пришёл": "gelmedi", "…и ещё ": "…we ýene ", ". Используйте поиск.": ". Gözlegi ulanyň.", "Вход: ": "Giriş: ", "Без входа": "Girişsiz", "Выход: ": "Çykyş: ", "Ещё внутри": "Entek içerde", " — НЕ вернул": " — GAÝTARMADY", " — вернул": " — gaýtardy", " — на руках": " — elinde", "\nОтсканировано: ": "\nSkanirlenen: ", "Сохранить имя": "Adyny ýatda sakla", "⬆ Отметить выход сейчас": "⬆ Çykyşy häzir belle", "Отменить выход (снова внутри)": "Çykyşy ýatyr (ýene içerde)", " вернули позже": " soňra gaýtardylar", "Изменить номер бейджа": "Bejik belgisini üýtget", "Добавить номер бейджа": "Bejik belgisini goş", "Удалить запись": "Ýazgyny poz", "Запись": "Ýazgy", "Имя исправлено: ": "Ady düzedildi: ", "Выход отменён: ": "Çykyş ýatyryldy: ", " возвращён: ": " gaýtaryldy: ", "Номер бейджа": "Bejik belgisi", "Бейдж сохранён: ": "Bejik ýatda saklandy: ", "Удалить «": "Pozmalymy «", "Удалено: ": "Pozuldy: ", " · строка ": " · setir ", "Вход ": "Giriş ", ", выход ": ", çykyş ", " — внутри": " — içerde", "\nЕщё не приходил": "\nEntek gelmedi", "⬇ Отметить вход вручную": "⬇ Girişi el bilen belle", "Убрать из чёрного списка": "Gara sanawdan aýyr", "⛔ Добавить в чёрный список": "⛔ Gara sanawa goş", "🗑 Убрать из списка": "🗑 Sanawdan aýyr", "Убрать «": "Aýyrmalymy «", "» из списка?": "» sanawdan?", "Да, убрать": "Hawa, aýyr", "Убран из списка: ": "Sanawdan aýryldy: ", "⛔ В чёрном списке: ": "⛔ Gara sanawda: ", "Убран из чёрного списка: ": "Gara sanawdan aýryldy: ", "это не Excel-файл": "bu Excel faýly däl", "обновите Chrome, чтобы открыть Excel": "Excel-i açmak üçin Chrome-y täzeläň", "в файле нет листов": "faýlda sahypa ýok", "лист «": "sahypa «", "» пустой": "» boş", "Читаю ": "Okaýaryn ", "⚠️ Не получилось прочитать файл: ": "⚠️ Faýly okap bolmady: ", "⚠️ В файле не нашлось имён.": "⚠️ Faýlda at tapylmady.", "Добавить список?": "Sanaw goşmalymy?", " · лист «": " · sahypa «", "\nЛюдей: ": "\nAdam: ", "\n⛔ Чёрный список (красные): ": "\n⛔ Gara sanaw (gyzyllar): ", "\nТип: ": "\nGörnüşi: ", "🛠 СОТРУДНИКИ — выдаём бейдж": "🛠 IŞGÄRLER — bejik berýäris", "👥 ГОСТИ — без бейджа": "👥 MYHMANLAR — bejiksiz", "\n\nПервые: ": "\n\nIlkinjiler: ", "\n\nСписок «": "\n\nSanaw «", "» уже загружен — он будет заменён.": "» eýýäm ýüklenen — ol çalşylar.", "Загрузить как СОТРУДНИКОВ (с бейджем)": "IŞGÄRLER hökmünde ýükle (bejikli)", "Загрузить как ГОСТЕЙ (без бейджа)": "MYHMANLAR hökmünde ýükle (bejiksiz)", "Нет, это гости (без бейджа)": "Ýok, bular myhmanlar (bejiksiz)", "Нет, это сотрудники (с бейджем)": "Ýok, bular işgärler (bejikli)", "✅ Загружен: ": "✅ Ýüklendi: ", ", в чёрном списке ": ", gara sanawda ", "✅ Отправлено: ": "✅ Iberildi: ", "Не получилось отправить: ": "Iberip bolmady: ", ". Попробуйте «Сохранить в телефон».": ". «Telefona ýatda sakla» synanyşyň.", "✅ Сохранено в «Загрузки»: ": "✅ «Ýüklemeler»-e saklandy: ", "пришло ": "geldi ", "Меню": "Menýu", "▼ свернуть": "▼ ýygnamak", "Excel · бейджи · новый ивент ▲": "Excel · bejikler · täze çäre ▲", "👁 Открыть Excel": "👁 Excel-i aç", "💾 Скачать Excel": "💾 Excel-i ýükle", "📤 Отправить Excel (Telegram, IMO, почта…)": "📤 Excel-i iber (Telegram, IMO, poçta…)", "Сотрудники": "Işgärler", "Гости": "Myhmanlar", "Все записи": "Ähli ýazgylar", "\n⚠️ Бейджей ещё не вернули: ": "\n⚠️ Entek gaýtarylmadyk bejikler: ", "Пока пусто — здесь появятся те, кто пришёл.": "Häzirlikçe boş — bu ýerde gelenler peýda bolar.", " строк": " setir", "\n\nБейдж вернул — отметить выход?": "\n\nBejigi gaýtardy — çykyşy bellemelimi?", " вернул — вышел": " gaýtardy — çykdy", " возвращён · вышел: ": " gaýtaryldy · çykdy: ", "\nУшёл в ": "\nÇykdy: ", " и не вернул бейдж.\nВернул сейчас?": " we bejigi gaýtarmady.\nHäzir gaýtardymy?", "✅ Да, бейдж вернул": "✅ Hawa, bejigi gaýtardy", "Сейчас ни у кого нет бейджа с этим номером.": "Häzir hiç kimde bu belgili bejik ýok.", "🔖 Вернуть бейдж": "🔖 Bejigi gaýtar", "Введите номер бейджа:": "Bejik belgisini giriziň:", "Дальше": "Dowam", "Всё уже пусто.": "Hemme zat eýýäm boş.", "⚠️ Последние изменения ещё НЕ выгружены в Excel!\nСначала нажмите «Скачать Excel».": "⚠️ Soňky üýtgeşmeler entek Excel-e GEÇIRILMEDI!\nIlki «Excel-i ýükle» basyň.", "Excel уже выгружен.": "Excel eýýäm ýüklendi.", "Удалить записи (списки оставить)": "Ýazgylary poz (sanawlar galsyn)", "Удалить всё: записи и списки": "Hemmesini poz: ýazgylary we sanawlary", "Начать новый ивент?": "Täze çäre başlamalymy?", "Записей: ": "Ýazgy: ", " · списков: ": " · sanaw: ", "Точно удалить без Excel?": "Excel-siz hakykatdan pozmalymy?", "Восстановить будет невозможно.": "Dikeldip bolmaz.", "Нет, сначала скачаю": "Ýok, ilki ýükläýin", "Очищено. Можно начинать новый ивент.": "Arassalandy. Täze çäräni başlap bolýar.", "● Этот браузер не умеет работать без интернета — откройте в Chrome": "● Bu brauzer internetsiz işläp bilmeýär — Chrome-da açyň", "● Готово к работе без интернета · данные хранятся в телефоне": "● Internetsiz işlemäge taýýar · maglumatlar telefonda saklanýar", "● Загружаю файлы для работы без интернета… ": "● Internetsiz işlemek üçin faýllary ýükleýärin… ", " (не закрывайте)": " (ýapmaň)", "● Проверка не удалась: ": "● Barlap bolmady: ", "⬇ Вход": "⬇ Giriş", "⬆ Выход": "⬆ Çykyş", "Камера": "Kamera", "внутри": "içerde", "пришло": "geldi", "ушло": "gitdi", "не пришло": "gelmedi", "🔍 Поиск": "🔍 Gözleg", "Открыть или закрыть панель": "Paneli aç ýa-da ýap", "Нажмите на камеру, чтобы начать.": "Başlamak üçin kamera basyň.", "● Проверка…": "● Barlanýar…", "🗑 Новый ивент": "🗑 Täze çäre", "Закрыть": "Ýap", "Другая камера": "Başga kamera", "Зум камеры": "Kamera zumy", "Фонарик": "Fonar", "Системная камера": "Ulgam kamerasy", "Переснять": "Täzeden al", "Увеличить": "Ulalt", "Показать текст": "Teksti görkez", "Готово": "Taýýar", "сотрудники": "işgärler", "гости": "myhmanlar", "Звук": "Ses", "🔊 Звук включён": "🔊 Ses açyk", "🔇 Звук выключен": "🔇 Ses öçük"}, en: {"Наведите на текст и нажмите на экран": "Point at the text and tap the screen", " (камера ": " (camera ", "Живая камера работает только по https. Открываю обычную камеру.": "Live camera works only over https. Opening the regular camera.", "Камера недоступна (": "Camera unavailable (", "). Открываю обычную камеру.": "). Opening the regular camera.", "Не удалось переключить камеру": "Could not switch camera", "Резко — можно снимать": "Sharp — ready to scan", "Размыто: отодвиньте телефон на 20–25 см или нажмите 2×": "Blurry: move the phone 20–25 cm away or tap 2×", "Фокусировка… держите телефон неподвижно": "Focusing… hold the phone still", "Ищу текст…": "Looking for text…", "Ищу текст… ещё раз": "Looking for text… once more", "Текст не найден. Нажмите ↻ и снимите с 20–25 см, при хорошем свете.": "No text found. Tap ↻ and shoot from 20–25 cm in good light.", "Снимок размытый — лучше нажать ↻ и переснять.": "The photo is blurry — better tap ↻ and retake.", "Ошибка распознавания: ": "Recognition error: ", "Нажмите на нужные слова": "Tap the words you need", "Сначала нажмите на слово (станет розовым)": "Tap a word first (it turns pink)", "Проверьте текст и нажмите ➤, чтобы сохранить.": "Check the text and tap ➤ to save.", "⚠️ Не получилось сохранить в телефон! Скачайте Excel прямо сейчас.": "⚠️ Could not save on the phone! Download Excel right now.", "Гость": "Guest", "Сотрудник": "Staff", "Например: 15": "For example: 15", "ФАМИЛИЯ ИМЯ — ВХОД": "SURNAME NAME — ENTRY", "ФАМИЛИЯ ИМЯ / № БЕЙДЖА — ВЫХОД": "SURNAME NAME / BADGE № — EXIT", "имя или номер бейджа": "name or badge number", "⛔ ЧЁРНЫЙ СПИСОК": "⛔ DENY LIST", "\nЭтот человек в чёрном списке. Не пускать!": "\nThis person is on the deny list. Do not let in!", "Не пускать": "Do not let in", "Всё равно впустить": "Let in anyway", "⛔ Не впущен (чёрный список): ": "⛔ Not admitted (deny list): ", "Уже внутри!": "Already inside!", "Уже приходил": "Already came before", "\nВошёл в ": "\nEntered at ", ", ушёл в ": ", left at ", "\nБейдж № ": "\nBadge № ", "\nЗаписать вход ещё раз?": "\nRecord entry again?", "Записать ещё раз": "Record again", "Отмена": "Cancel", "Выдайте бейдж: какой номер?": "Hand out a badge: which number?", "Сохранить": "Save", "Без бейджа": "No badge", "Бейдж № ": "Badge № ", " уже на руках": " is already handed out", " (вошёл ": " (entered ", ") ещё не вернул его.": ") has not returned it yet.", "Ввести другой номер": "Enter another number", "Всё равно выдать": "Hand out anyway", "✅ Вход: ": "✅ Entry: ", " · бейдж № ": " · badge № ", " (нет в списке)": " (not in list)", "Нет в списке!": "Not in the list!", "» не найден ни в одном списке.": "» was not found in any list.", "Всё равно впустить (отметить «нет в списке»)": "Let in anyway (mark «not in list»)", "Не впущен (нет в списке): ": "Not admitted (not in list): ", " · уже внутри": " · already inside", " · уже был": " · already came", "Никто из них — нет в списке": "None of them — not in list", "Похожие: выберите номер": "Similar names: pick a number", "Для «": "For «", "» найдено: ": "» found: ", "Заберите бейдж № ": "Take back badge № ", "✅ Бейдж № ": "✅ Badge № ", " вернул": " returned", "Бейдж НЕ вернул": "Badge NOT returned", "✅ Выход: ": "✅ Exit: ", " · ⚠️ бейдж № ": " · ⚠️ badge № ", " НЕ вернул": " NOT returned", " возвращён": " returned", " не найден": " not found", "Ни у кого внутри нет бейджа с этим номером.": "Nobody inside has a badge with this number.", "  (вошёл ": "  (entered ", ", бейдж ": ", badge ", "Нет в списке — записать выход отдельно": "Not in list — record exit separately", "Кто уходит? Выберите номер": "Who is leaving? Pick a number", "Не найден среди тех, кто внутри": "Not found among those inside", "Похожие внутри для «": "Similar people inside for «", "» не записан на вход (или уже вышел).": "» has no entry (or already left).", "✅ Выход (без входа): ": "✅ Exit (no entry): ", "Поле пустое: отсканируйте или впишите имя.": "The field is empty: scan or type a name.", "чёрный список": "deny list", "нет в списке": "not in list", " не вернул": " not returned", "🛠 Сотрудники": "🛠 Staff", "👥 Гости": "👥 Guests", "с бейджем": "with badge", "без бейджа": "no badge", "Удалить список": "Delete list", "Бейджей на руках: ": "Badges handed out: ", " · не вернули: ": " · not returned: ", " · нажмите на список, чтобы изменить": " · tap a list to change it", "Списки не загружены: приложение просто записывает всех. Загрузите Guest list и/или Vendors check list (.xlsm / .xlsx).": "No lists loaded: the app just records everyone. Load Guest list and/or Vendors check list (.xlsm / .xlsx).", "➕ Добавить ещё список": "➕ Add another list", "📥 Загрузить список (Excel)": "📥 Load a list (Excel)", "Вы действительно хотите удалить этот список?": "Do you really want to delete this list?", " человек": " people", "\nУже пришли: ": "\nAlready came: ", " — их записи входа/выхода останутся.": " — their entry/exit records will stay.", "Да, удалить": "Yes, delete", "Нет": "No", "🗑 Список удалён: ": "🗑 List deleted: ", "Лист «": "Sheet «", " человек\nТип: ": " people\nType: ", " — выдаём бейдж": " — we hand out badges", " — без бейджа": " — no badge", "📋 Показать весь список (кто пришёл и кто нет)": "📋 Show the whole list (who came and who didn't)", "➕ Добавить человека в этот список": "➕ Add a person to this list", "Сделать списком ГОСТЕЙ (без бейджа)": "Make it a GUEST list (no badge)", "Сделать списком СОТРУДНИКОВ (с бейджем)": "Make it a STAFF list (with badge)", "Не спрашивать бейдж": "Don't ask for a badge", "Спрашивать номер бейджа": "Ask for a badge number", "Удалить этот список": "Delete this list", "Новый человек в «": "New person in «", "Формат как в Excel: Фамилия, Имя": "Format as in Excel: Surname, Name", "Добавить": "Add", "✅ Добавлен в «": "✅ Added to «", "Удалить список «": "Delete the list «", "Записи входа/выхода останутся.": "Entry/exit records will stay.", "👥 Гости · ": "👥 Guests · ", "🛠 Сотрудники · ": "🛠 Staff · ", "Никого не найдено.": "Nobody found.", "Сотрудники ещё не приходили.": "No staff have arrived yet.", "Пока никто не пришёл. Отсканируйте первого гостя.": "Nobody has arrived yet. Scan the first guest.", "📋 Весь список: ": "📋 Whole list: ", "✕ Закрыть": "✕ Close", "не пришёл": "didn't come", "…и ещё ": "…and ", ". Используйте поиск.": " more. Use search.", "Вход: ": "Entry: ", "Без входа": "No entry", "Выход: ": "Exit: ", "Ещё внутри": "Still inside", " — НЕ вернул": " — NOT returned", " — вернул": " — returned", " — на руках": " — on hand", "\nОтсканировано: ": "\nScanned: ", "Сохранить имя": "Save name", "⬆ Отметить выход сейчас": "⬆ Mark exit now", "Отменить выход (снова внутри)": "Undo exit (inside again)", " вернули позже": " returned later", "Изменить номер бейджа": "Change badge number", "Добавить номер бейджа": "Add badge number", "Удалить запись": "Delete record", "Запись": "Record", "Имя исправлено: ": "Name corrected: ", "Выход отменён: ": "Exit undone: ", " возвращён: ": " returned: ", "Номер бейджа": "Badge number", "Бейдж сохранён: ": "Badge saved: ", "Удалить «": "Delete «", "Удалено: ": "Deleted: ", " · строка ": " · row ", "Вход ": "Entry ", ", выход ": ", exit ", " — внутри": " — inside", "\nЕщё не приходил": "\nHas not come yet", "⬇ Отметить вход вручную": "⬇ Mark entry manually", "Убрать из чёрного списка": "Remove from deny list", "⛔ Добавить в чёрный список": "⛔ Add to deny list", "🗑 Убрать из списка": "🗑 Remove from list", "Убрать «": "Remove «", "» из списка?": "» from the list?", "Да, убрать": "Yes, remove", "Убран из списка: ": "Removed from list: ", "⛔ В чёрном списке: ": "⛔ On deny list: ", "Убран из чёрного списка: ": "Removed from deny list: ", "это не Excel-файл": "this is not an Excel file", "обновите Chrome, чтобы открыть Excel": "update Chrome to open Excel", "в файле нет листов": "the file has no sheets", "лист «": "sheet «", "» пустой": "» is empty", "Читаю ": "Reading ", "⚠️ Не получилось прочитать файл: ": "⚠️ Could not read the file: ", "⚠️ В файле не нашлось имён.": "⚠️ No names found in the file.", "Добавить список?": "Add this list?", " · лист «": " · sheet «", "\nЛюдей: ": "\nPeople: ", "\n⛔ Чёрный список (красные): ": "\n⛔ Deny list (red): ", "\nТип: ": "\nType: ", "🛠 СОТРУДНИКИ — выдаём бейдж": "🛠 STAFF — we hand out badges", "👥 ГОСТИ — без бейджа": "👥 GUESTS — no badge", "\n\nПервые: ": "\n\nFirst ones: ", "\n\nСписок «": "\n\nThe list «", "» уже загружен — он будет заменён.": "» is already loaded — it will be replaced.", "Загрузить как СОТРУДНИКОВ (с бейджем)": "Load as STAFF (with badge)", "Загрузить как ГОСТЕЙ (без бейджа)": "Load as GUESTS (no badge)", "Нет, это гости (без бейджа)": "No, these are guests (no badge)", "Нет, это сотрудники (с бейджем)": "No, these are staff (with badge)", "✅ Загружен: ": "✅ Loaded: ", ", в чёрном списке ": ", on deny list ", "✅ Отправлено: ": "✅ Sent: ", "Не получилось отправить: ": "Could not send: ", ". Попробуйте «Сохранить в телефон».": ". Try «Save to phone».", "✅ Сохранено в «Загрузки»: ": "✅ Saved to «Downloads»: ", "пришло ": "came ", "Меню": "Menu", "▼ свернуть": "▼ collapse", "Excel · бейджи · новый ивент ▲": "Excel · badges · new event ▲", "👁 Открыть Excel": "👁 Open Excel", "💾 Скачать Excel": "💾 Download Excel", "📤 Отправить Excel (Telegram, IMO, почта…)": "📤 Send Excel (Telegram, IMO, email…)", "Сотрудники": "Staff", "Гости": "Guests", "Все записи": "All records", "\n⚠️ Бейджей ещё не вернули: ": "\n⚠️ Badges not returned yet: ", "Пока пусто — здесь появятся те, кто пришёл.": "Empty for now — people who came will appear here.", " строк": " rows", "\n\nБейдж вернул — отметить выход?": "\n\nBadge returned — mark exit?", " вернул — вышел": " returned — left", " возвращён · вышел: ": " returned · left: ", "\nУшёл в ": "\nLeft at ", " и не вернул бейдж.\nВернул сейчас?": " without returning the badge.\nReturned now?", "✅ Да, бейдж вернул": "✅ Yes, badge returned", "Сейчас ни у кого нет бейджа с этим номером.": "Nobody has a badge with this number right now.", "🔖 Вернуть бейдж": "🔖 Return badge", "Введите номер бейджа:": "Enter the badge number:", "Дальше": "Next", "Всё уже пусто.": "Everything is already empty.", "⚠️ Последние изменения ещё НЕ выгружены в Excel!\nСначала нажмите «Скачать Excel».": "⚠️ The latest changes are NOT exported to Excel yet!\nTap «Download Excel» first.", "Excel уже выгружен.": "Excel already downloaded.", "Удалить записи (списки оставить)": "Delete records (keep lists)", "Удалить всё: записи и списки": "Delete everything: records and lists", "Начать новый ивент?": "Start a new event?", "Записей: ": "Records: ", " · списков: ": " · lists: ", "Точно удалить без Excel?": "Really delete without Excel?", "Восстановить будет невозможно.": "This cannot be undone.", "Нет, сначала скачаю": "No, I'll download first", "Очищено. Можно начинать новый ивент.": "Cleared. You can start a new event.", "● Этот браузер не умеет работать без интернета — откройте в Chrome": "● This browser can't work offline — open it in Chrome", "● Готово к работе без интернета · данные хранятся в телефоне": "● Ready to work offline · data is stored on this phone", "● Загружаю файлы для работы без интернета… ": "● Downloading files for offline use… ", " (не закрывайте)": " (don't close)", "● Проверка не удалась: ": "● Check failed: ", "⬇ Вход": "⬇ Entry", "⬆ Выход": "⬆ Exit", "Камера": "Camera", "внутри": "inside", "пришло": "came", "ушло": "left", "не пришло": "didn't come", "🔍 Поиск": "🔍 Search", "Открыть или закрыть панель": "Open or close the panel", "Нажмите на камеру, чтобы начать.": "Tap the camera to start.", "● Проверка…": "● Checking…", "🗑 Новый ивент": "🗑 New event", "Закрыть": "Close", "Другая камера": "Other camera", "Зум камеры": "Camera zoom", "Фонарик": "Flashlight", "Системная камера": "System camera", "Переснять": "Retake", "Увеличить": "Zoom in", "Показать текст": "Show text", "Готово": "Done", "сотрудники": "staff", "гости": "guests", "Звук": "Sound", "🔊 Звук включён": "🔊 Sound on", "🔇 Звук выключен": "🔇 Sound off"} };
+function TT(s){ const d = I18N[LANG]; return d && d[s] != null ? d[s] : s; }
+(function i18nDom(){
+  document.documentElement.lang = LANG;
+  if (LANG === "ru") return;
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  let n; while ((n = w.nextNode())){ const t = n.nodeValue.trim(); if (t && I18N[LANG][t] != null) n.nodeValue = n.nodeValue.replace(t, I18N[LANG][t]); }
+  document.querySelectorAll("[placeholder],[aria-label],[title]").forEach(el => ["placeholder", "aria-label", "title"].forEach(a => {
+    const v = el.getAttribute(a); if (v && I18N[LANG][v] != null) el.setAttribute(a, I18N[LANG][v]); }));
+})();
+
 const $ = id => document.getElementById(id);
 let workerPromise = null, stream = null, words = [], picked = [], zoom = 1, capturing = false;
 let cams = [], camIdx = 0, camZoom = 1;
@@ -240,7 +259,7 @@ const LANGS = "eng";
 const MAX_SIDE = 2400;
 const MIN_CONF = 45;
 const BLUR_LIMIT = 80;
-const HINT_DEFAULT = "Наведите на текст и нажмите на экран";
+const HINT_DEFAULT = TT("Наведите на текст и нажмите на экран");
 
 function setStatus(t){ $("status").textContent = t; }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -480,12 +499,12 @@ async function setupTrack(){
   if (caps.whiteBalanceMode && caps.whiteBalanceMode.includes("continuous")) adv.whiteBalanceMode = "continuous";
   if (Object.keys(adv).length){ try { await track.applyConstraints({ advanced: [adv] }); } catch (e) {} }
   const v = $("video");
-  $("hintText").textContent = HINT_DEFAULT + " (камера " + v.videoWidth + "×" + v.videoHeight + ")";
+  $("hintText").textContent = HINT_DEFAULT + TT(" (камера ") + v.videoWidth + "×" + v.videoHeight + ")";
 }
 
 async function openCamera(){
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    setStatus("Живая камера работает только по https. Открываю обычную камеру.");
+    setStatus(TT("Живая камера работает только по https. Открываю обычную камеру."));
     $("file").click(); return;
   }
   try {
@@ -495,7 +514,7 @@ async function openCamera(){
     store("camId");
     try { await startStream(); }
     catch (e2){
-      setStatus("Камера недоступна (" + e2.message + "). Открываю обычную камеру.");
+      setStatus(TT("Камера недоступна (") + e2.message + TT("). Открываю обычную камеру."));
       $("file").click(); return;
     }
   }
@@ -521,7 +540,7 @@ $("switchCam").addEventListener("click", async () => {
   if (cams.length < 2) return;
   camIdx = (camIdx + 1) % cams.length;
   store("camId", cams[camIdx].deviceId);
-  try { await startStream(cams[camIdx].deviceId); } catch (e){ setStatus("Не удалось переключить камеру"); }
+  try { await startStream(cams[camIdx].deviceId); } catch (e){ setStatus(TT("Не удалось переключить камеру")); }
 });
 
 $("camZoom").addEventListener("click", async () => {
@@ -553,7 +572,7 @@ setInterval(() => {
   const okS = s >= BLUR_LIMIT * 1.5;
   h.classList.toggle("sharp", okS);
   h.classList.toggle("blur", !okS);
-  $("meter").textContent = okS ? "Резко — можно снимать" : "Размыто: отодвиньте телефон на 20–25 см или нажмите 2×";
+  $("meter").textContent = okS ? TT("Резко — можно снимать") : TT("Размыто: отодвиньте телефон на 20–25 см или нажмите 2×");
 }, 700);
 
 async function focusAt(track, e, v){
@@ -605,7 +624,7 @@ $("video").addEventListener("click", async e => {
   const v = $("video");
   if (!v.videoWidth || capturing || !stream) return;
   capturing = true;
-  $("hintText").textContent = "Фокусировка… держите телефон неподвижно";
+  $("hintText").textContent = TT("Фокусировка… держите телефон неподвижно");
   $("meter").textContent = "";
   const track = stream.getVideoTracks()[0];
   try {
@@ -647,7 +666,7 @@ async function analyze(canvas, score){
   words = []; picked = []; updatePick();
   setZoom(1);
   show("selScreen");
-  $("busy").textContent = "Ищу текст…";
+  $("busy").textContent = TT("Ищу текст…");
   $("busy").classList.add("on");
   try {
     const w = await getWorker();
@@ -662,7 +681,7 @@ async function analyze(canvas, score){
     };
     await runPass(binarize(canvas, 1800));
     if (all.filter(x => goodWord(x, W, H)).length < 12){
-      $("busy").textContent = "Ищу текст… ещё раз";
+      $("busy").textContent = TT("Ищу текст… ещё раз");
       await runPass(preprocess(canvas, 1300));
     }
     words = mergeWords(all.filter(x => goodWord(x, W, H)));
@@ -684,14 +703,14 @@ async function analyze(canvas, score){
     layoutLabels();
     $("busy").classList.remove("on");
     if (!words.length){
-      $("pick").textContent = "Текст не найден. Нажмите ↻ и снимите с 20–25 см, при хорошем свете.";
+      $("pick").textContent = TT("Текст не найден. Нажмите ↻ и снимите с 20–25 см, при хорошем свете.");
       $("pick").className = "warn";
     } else if (score < BLUR_LIMIT){
-      $("pick").textContent = "Снимок размытый — лучше нажать ↻ и переснять.";
+      $("pick").textContent = TT("Снимок размытый — лучше нажать ↻ и переснять.");
       $("pick").className = "warn";
     }
   } catch (err){
-    $("busy").textContent = "Ошибка распознавания: " + err.message;
+    $("busy").textContent = TT("Ошибка распознавания: ") + err.message;
   }
 }
 
@@ -726,7 +745,7 @@ function pickedText(){
 
 function updatePick(){
   const t = pickedText();
-  $("pick").textContent = t || "Нажмите на нужные слова";
+  $("pick").textContent = t || TT("Нажмите на нужные слова");
   $("pick").className = t ? "" : "empty";
 }
 
@@ -745,10 +764,58 @@ $("retake").addEventListener("click", () => {
 
 $("accept").addEventListener("click", () => {
   const t = pickedText();
-  if (!t){ $("pick").textContent = "Сначала нажмите на слово (станет розовым)"; return; }
+  if (!t){ $("pick").textContent = TT("Сначала нажмите на слово (станет розовым)"); return; }
   $("text").value = t;
   history.back();
-  setStatus("Проверьте текст и нажмите ➤, чтобы сохранить.");
+  setStatus(TT("Проверьте текст и нажмите ➤, чтобы сохранить."));
+});
+
+/* ===== ЗВУКИ сканера (без файлов и без интернета) ===== */
+let AC = null, soundOn = load("sound") !== "0";
+function snd(kind){
+  if (!soundOn) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === "suspended") AC.resume();
+    const t0 = AC.currentTime + 0.01;
+    const tone = (f, at, dur, type, vol, f2) => {
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = type || "square"; o.frequency.setValueAtTime(f, t0 + at);
+      if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + at + dur);
+      g.gain.setValueAtTime(0.0001, t0 + at);
+      g.gain.exponentialRampToValueAtTime(vol || 0.18, t0 + at + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + dur);
+      o.connect(g); g.connect(AC.destination); o.start(t0 + at); o.stop(t0 + at + dur + 0.02);
+    };
+    const noise = (at, dur, vol) => {
+      const n = Math.floor(AC.sampleRate * dur), buf = AC.createBuffer(1, n, AC.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      const src = AC.createBufferSource(), g = AC.createGain(), f = AC.createBiquadFilter();
+      f.type = "highpass"; f.frequency.value = 1800; g.gain.value = vol || 0.25;
+      src.buffer = buf; src.connect(f); f.connect(g); g.connect(AC.destination); src.start(t0 + at);
+    };
+    if (kind === "open"){ tone(880, 0, 0.07, "sine", 0.2); tone(1320, 0.09, 0.09, "sine", 0.2); }
+    else if (kind === "scan"){ noise(0, 0.06, 0.3); tone(500, 0.04, 0.32, "sawtooth", 0.06, 2600); tone(2700, 0.4, 0.13, "square", 0.12); }
+    else if (kind === "found"){ tone(2200, 0, 0.06, "square", 0.1); tone(2200, 0.09, 0.06, "square", 0.1); }
+    else if (kind === "ok"){ tone(1900, 0, 0.11, "square", 0.12); }
+    else if (kind === "warn"){ tone(700, 0, 0.12, "triangle", 0.25); tone(500, 0.14, 0.16, "triangle", 0.25); }
+    else if (kind === "alarm"){ for (let i = 0; i < 3; i++) tone(220, i * 0.2, 0.15, "square", 0.2); }
+  } catch (e) {}
+}
+$("camBtn").addEventListener("click", () => snd("open"));
+$("video").addEventListener("click", () => { if (!capturing) snd("scan"); }, true);
+$("nativeCam").addEventListener("click", () => snd("open"));
+// когда распознавание закончилось и слова найдены — короткий «бип-бип»
+new MutationObserver(() => { if (!$("busy").classList.contains("on") && $("selScreen").classList.contains("on") && words.length) snd("found"); })
+  .observe($("busy"), { attributes: true, attributeFilter: ["class"] });
+function setSndBtn(){ $("sndBtn").textContent = soundOn ? "🔊" : "🔇"; }
+$("sndBtn").addEventListener("click", () => { soundOn = !soundOn; store("sound", soundOn ? "1" : "0"); setSndBtn(); setStatus(soundOn ? TT("🔊 Звук включён") : TT("🔇 Звук выключен")); if (soundOn) snd("ok"); });
+setSndBtn();
+
+/* ===== язык: TM / RU / EN ===== */
+document.querySelectorAll(".langs button").forEach(b => {
+  b.classList.toggle("on", b.dataset.l === LANG);
+  b.addEventListener("click", () => { if (b.dataset.l === LANG) return; store("lang", b.dataset.l); location.reload(); });
 });
 
 /* ===== GuestCheck: всё хранится в этом телефоне ===== */
@@ -779,7 +846,7 @@ function persist(){
     localStorage.setItem("dirty", dirty ? "1" : "0");
     return true;
   } catch (e){
-    setStatus("⚠️ Не получилось сохранить в телефон! Скачайте Excel прямо сейчас.");
+    setStatus(TT("⚠️ Не получилось сохранить в телефон! Скачайте Excel прямо сейчас."));
     return false;
   }
 }
@@ -792,7 +859,7 @@ function stamp(d){
     pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
 }
 const hm = s => s ? s.slice(11, 16) : "";
-const KIND = { guest: "Гость", staff: "Сотрудник" };
+const KIND = { guest: TT("Гость"), staff: TT("Сотрудник") };
 const listById = id => lists.find(l => l.id === id);
 function allEntries(){ const out = []; lists.forEach(l => l.items.forEach(e => out.push({ e, l }))); return out; }
 function entryById(id){ for (const l of lists){ const e = l.items.find(x => x.id === id); if (e) return { e, l }; } return null; }
@@ -856,7 +923,7 @@ function ask(title, text, buttons, input, opt){
     if (input != null){
       inp = document.createElement("input");
       inp.value = input; inp.autocomplete = "off";
-      if (opt.numeric){ inp.inputMode = "numeric"; inp.placeholder = "Например: 15"; }
+      if (opt.numeric){ inp.inputMode = "numeric"; inp.placeholder = TT("Например: 15"); }
       $("mBody").append(inp);
       setTimeout(() => inp.focus(), 50);
       inp.addEventListener("keydown", e => { if (e.key === "Enter") $("mBtns").firstChild.click(); });
@@ -869,7 +936,7 @@ function ask(title, text, buttons, input, opt){
       return el;
     }));
     $("modal").classList.add("on");
-    if (opt.danger && navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 300]);
+    if (opt.danger){ snd("alarm"); if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 300]); }
   });
 }
 $("modal").addEventListener("click", e => { if (e.target === $("modal")) $("mBtns").lastChild.click(); });
@@ -880,14 +947,15 @@ function setMode(m){
   $("mIn").classList.toggle("on", m === "in");
   $("mOut").classList.toggle("on", m === "out");
   $("modeLetter").textContent = m === "in" ? "⬇" : "⬆";
-  $("modeLabel").textContent = m === "in" ? "ФАМИЛИЯ ИМЯ — ВХОД" : "ФАМИЛИЯ ИМЯ / № БЕЙДЖА — ВЫХОД";
-  $("text").placeholder = m === "in" ? "" : "имя или номер бейджа";
+  $("modeLabel").textContent = m === "in" ? TT("ФАМИЛИЯ ИМЯ — ВХОД") : TT("ФАМИЛИЯ ИМЯ / № БЕЙДЖА — ВЫХОД");
+  $("text").placeholder = m === "in" ? "" : TT("имя или номер бейджа");
 }
 $("mIn").addEventListener("click", () => setMode("in"));
 $("mOut").addEventListener("click", () => setMode("out"));
 
 function newId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 function done(msg){
+  snd(/⚠️/.test(msg) ? "warn" : "ok");
   dirty = true; persist(); render();
   $("text").value = "";
   setStatus(msg);
@@ -900,39 +968,39 @@ async function admit(scanned, hit){
   const e = hit ? hit.e : null, l = hit ? hit.l : null;
   const who = e ? e.name : scanned;
   if (e && e.deny){
-    const r = await ask("⛔ ЧЁРНЫЙ СПИСОК", e.name + (l ? " · " + KIND[l.kind] : "") + "\nЭтот человек в чёрном списке. Не пускать!",
-      [{ label: "Не пускать", value: 0, cls: "red" }, { label: "Всё равно впустить", value: 1, cls: "plain" }], null, { danger: true });
-    if (!r.value){ setStatus("⛔ Не впущен (чёрный список): " + e.name); $("text").value = ""; return; }
+    const r = await ask(TT("⛔ ЧЁРНЫЙ СПИСОК"), e.name + (l ? " · " + KIND[l.kind] : "") + TT("\nЭтот человек в чёрном списке. Не пускать!"),
+      [{ label: TT("Не пускать"), value: 0, cls: "red" }, { label: TT("Всё равно впустить"), value: 1, cls: "plain" }], null, { danger: true });
+    if (!r.value){ setStatus(TT("⛔ Не впущен (чёрный список): ") + e.name); $("text").value = ""; return; }
   }
   const prev = e ? recsOf(e).filter(g => g.in) : guests.filter(g => g.in && !g.listId && norm(g.name) === norm(scanned));
   const insideNow = prev.find(g => !g.out);
   if (prev.length){
     const p = insideNow || prev[prev.length - 1];
-    const r = await ask(insideNow ? "Уже внутри!" : "Уже приходил",
-      p.name + "\nВошёл в " + hm(p.in) + (p.out ? ", ушёл в " + hm(p.out) : "") + (p.badge ? "\nБейдж № " + p.badge : "") + "\nЗаписать вход ещё раз?",
-      [{ label: "Записать ещё раз", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }], null, { danger: !!insideNow });
+    const r = await ask(insideNow ? TT("Уже внутри!") : TT("Уже приходил"),
+      p.name + TT("\nВошёл в ") + hm(p.in) + (p.out ? TT(", ушёл в ") + hm(p.out) : "") + (p.badge ? TT("\nБейдж № ") + p.badge : "") + TT("\nЗаписать вход ещё раз?"),
+      [{ label: TT("Записать ещё раз"), value: 1, cls: "main" }, { label: TT("Отмена"), value: 0, cls: "plain" }], null, { danger: !!insideNow });
     if (!r.value) return;
   }
   let badge = "";
   if (l && l.badge){
     for (;;){
-      const r = await ask("Выдайте бейдж: какой номер?", who + " · " + KIND[l.kind], [
-        { label: "Сохранить", value: 1, cls: "main" }, { label: "Без бейджа", value: 2 }, { label: "Отмена", value: 0, cls: "plain" }], "", { numeric: true });
+      const r = await ask(TT("Выдайте бейдж: какой номер?"), who + " · " + KIND[l.kind], [
+        { label: TT("Сохранить"), value: 1, cls: "main" }, { label: TT("Без бейджа"), value: 2 }, { label: TT("Отмена"), value: 0, cls: "plain" }], "", { numeric: true });
       if (!r.value) return;
       if (r.value === 2) break;
       badge = r.input;
       if (!badge){ continue; }
       const busy = guests.find(g => g.badge === badge && g.in && !g.out);
       if (!busy) break;
-      const r2 = await ask("Бейдж № " + badge + " уже на руках", busy.name + " (вошёл " + hm(busy.in) + ") ещё не вернул его.",
-        [{ label: "Ввести другой номер", value: 2, cls: "main" }, { label: "Всё равно выдать", value: 1 }, { label: "Отмена", value: 0, cls: "plain" }]);
+      const r2 = await ask(TT("Бейдж № ") + badge + TT(" уже на руках"), busy.name + TT(" (вошёл ") + hm(busy.in) + TT(") ещё не вернул его."),
+        [{ label: TT("Ввести другой номер"), value: 2, cls: "main" }, { label: TT("Всё равно выдать"), value: 1 }, { label: TT("Отмена"), value: 0, cls: "plain" }]);
       if (!r2.value) return;
       if (r2.value === 1) break;
     }
   }
   guests.push({ id: newId(), name: who, scanned, listId: e ? e.id : "", lst: l ? l.id : "", kind: l ? l.kind : "",
     in: stamp(), out: "", badge, badgeBack: "", deny: !!(e && e.deny), nil: !e && lists.length > 0, color: e ? e.color || "" : "" });
-  done("✅ Вход: " + who + (l ? " · " + KIND[l.kind] : "") + (badge ? " · бейдж № " + badge : "") + (!e && lists.length ? " (нет в списке)" : ""));
+  done(TT("✅ Вход: ") + who + (l ? " · " + KIND[l.kind] : "") + (badge ? TT(" · бейдж № ") + badge : "") + (!e && lists.length ? TT(" (нет в списке)") : ""));
 }
 
 async function saveIn(name){
@@ -941,20 +1009,20 @@ async function saveIn(name){
   const strong = cands.filter(x => x.m.strong);
   if (strong.length === 1 && (cands.length === 1 || strong[0].m.rank < 1)) return admit(name, strong[0]);
   if (!cands.length){
-    const r = await ask("Нет в списке!", "«" + name + "» не найден ни в одном списке.",
-      [{ label: "Не пускать", value: 0, cls: "red" }, { label: "Всё равно впустить (отметить «нет в списке»)", value: 1, cls: "plain" }], null, { danger: true });
+    const r = await ask(TT("Нет в списке!"), "«" + name + TT("» не найден ни в одном списке."),
+      [{ label: TT("Не пускать"), value: 0, cls: "red" }, { label: TT("Всё равно впустить (отметить «нет в списке»)"), value: 1, cls: "plain" }], null, { danger: true });
     if (r.value) return admit(name, null);
-    setStatus("Не впущен (нет в списке): " + name); $("text").value = "";
+    setStatus(TT("Не впущен (нет в списке): ") + name); $("text").value = "";
     return;
   }
   const top = cands.slice(0, 9);
   const btns = top.map((x, i) => {
     const rs = recsOf(x.e).filter(g => g.in), inside = rs.find(g => !g.out);
-    return { label: (i + 1) + ". " + (x.e.deny ? "⛔ " : "") + x.e.name + "  — " + KIND[x.l.kind] + " №" + x.e.row + (inside ? " · уже внутри" : rs.length ? " · уже был" : ""),
+    return { label: (i + 1) + ". " + (x.e.deny ? "⛔ " : "") + x.e.name + "  — " + KIND[x.l.kind] + " №" + x.e.row + (inside ? TT(" · уже внутри") : rs.length ? TT(" · уже был") : ""),
       value: x.e.id, cls: x.e.deny ? "red" : "", color: x.e.color && !x.e.deny ? x.e.color : "" };
   });
-  btns.push({ label: "Никто из них — нет в списке", value: "nil", cls: "plain" }, { label: "Отмена", value: 0, cls: "plain" });
-  const r = await ask("Похожие: выберите номер", "Для «" + name + "» найдено: " + cands.length, btns);
+  btns.push({ label: TT("Никто из них — нет в списке"), value: "nil", cls: "plain" }, { label: TT("Отмена"), value: 0, cls: "plain" });
+  const r = await ask(TT("Похожие: выберите номер"), TT("Для «") + name + TT("» найдено: ") + cands.length, btns);
   if (!r.value) return;
   if (r.value === "nil") return admit(name, null);
   return admit(name, entryById(r.value));
@@ -963,13 +1031,13 @@ async function saveIn(name){
 /* ===== ВЫХОД ===== */
 async function checkout(g){
   if (g.badge){
-    const r = await ask("Заберите бейдж № " + g.badge, g.name + "\nВошёл в " + hm(g.in),
-      [{ label: "✅ Бейдж № " + g.badge + " вернул", value: "yes", cls: "main" }, { label: "Бейдж НЕ вернул", value: "no", cls: "red" }, { label: "Отмена", value: 0, cls: "plain" }]);
+    const r = await ask(TT("Заберите бейдж № ") + g.badge, g.name + TT("\nВошёл в ") + hm(g.in),
+      [{ label: TT("✅ Бейдж № ") + g.badge + TT(" вернул"), value: "yes", cls: "main" }, { label: TT("Бейдж НЕ вернул"), value: "no", cls: "red" }, { label: TT("Отмена"), value: 0, cls: "plain" }]);
     if (!r.value) return;
     g.badgeBack = r.value === "yes" ? stamp() : "НЕТ";
   }
   g.out = stamp();
-  done("✅ Выход: " + g.name + (g.badge ? (g.badgeBack === "НЕТ" ? " · ⚠️ бейдж № " + g.badge + " НЕ вернул" : " · бейдж № " + g.badge + " возвращён") : ""));
+  done(TT("✅ Выход: ") + g.name + (g.badge ? (g.badgeBack === "НЕТ" ? TT(" · ⚠️ бейдж № ") + g.badge + TT(" НЕ вернул") : TT(" · бейдж № ") + g.badge + TT(" возвращён")) : ""));
 }
 async function saveOut(name){
   const inside = guests.filter(g => g.in && !g.out);
@@ -977,7 +1045,7 @@ async function saveOut(name){
     const b = inside.filter(g => g.badge === name);
     if (b.length === 1) return checkout(b[0]);
     if (!b.length){
-      const r = await ask("Бейдж № " + name + " не найден", "Ни у кого внутри нет бейджа с этим номером.", [{ label: "OK", value: 0, cls: "plain" }]);
+      const r = await ask(TT("Бейдж № ") + name + TT(" не найден"), TT("Ни у кого внутри нет бейджа с этим номером."), [{ label: "OK", value: 0, cls: "plain" }]);
       return;
     }
   }
@@ -985,15 +1053,15 @@ async function saveOut(name){
   if (exact.length === 1) return checkout(exact[0]);
   const cands = inside.map(g => ({ g, m: (g.badge && g.badge === name ? { rank: 0 } : null) || matchName(name, g.name) || matchName(name, g.scanned || "") }))
     .filter(x => x.m).sort((a, b) => a.m.rank - b.m.rank).slice(0, 9);
-  const btns = cands.map((x, i) => ({ label: (i + 1) + ". " + x.g.name + (x.g.kind ? " — " + KIND[x.g.kind] : "") + "  (вошёл " + hm(x.g.in) + (x.g.badge ? ", бейдж " + x.g.badge : "") + ")", value: x.g.id }));
-  btns.push({ label: "Нет в списке — записать выход отдельно", value: "new", cls: "blue" });
-  btns.push({ label: "Отмена", value: 0, cls: "plain" });
-  const r = await ask(cands.length ? "Кто уходит? Выберите номер" : "Не найден среди тех, кто внутри",
-    cands.length ? "Похожие внутри для «" + name + "»:" : "«" + name + "» не записан на вход (или уже вышел).", btns);
+  const btns = cands.map((x, i) => ({ label: (i + 1) + ". " + x.g.name + (x.g.kind ? " — " + KIND[x.g.kind] : "") + TT("  (вошёл ") + hm(x.g.in) + (x.g.badge ? TT(", бейдж ") + x.g.badge : "") + ")", value: x.g.id }));
+  btns.push({ label: TT("Нет в списке — записать выход отдельно"), value: "new", cls: "blue" });
+  btns.push({ label: TT("Отмена"), value: 0, cls: "plain" });
+  const r = await ask(cands.length ? TT("Кто уходит? Выберите номер") : TT("Не найден среди тех, кто внутри"),
+    cands.length ? TT("Похожие внутри для «") + name + "»:" : "«" + name + TT("» не записан на вход (или уже вышел)."), btns);
   if (!r.value) return;
   if (r.value === "new"){
     guests.push({ id: newId(), name, scanned: name, listId: "", lst: "", kind: "", in: "", out: stamp(), badge: "", badgeBack: "", deny: false, nil: lists.length > 0, color: "" });
-    done("✅ Выход (без входа): " + name);
+    done(TT("✅ Выход (без входа): ") + name);
     return;
   }
   return checkout(guests.find(g => g.id === r.value));
@@ -1001,7 +1069,7 @@ async function saveOut(name){
 
 async function saveNow(){
   const name = $("text").value.trim().replace(/\s+/g, " ");
-  if (!name){ setStatus("Поле пустое: отсканируйте или впишите имя."); return; }
+  if (!name){ setStatus(TT("Поле пустое: отсканируйте или впишите имя.")); return; }
   if (/^\d{1,6}$/.test(name) && guests.some(g => g.badge)) return returnBadge(name);   // ввели номер бейджа — возврат
   if (mode === "in") await saveIn(name); else await saveOut(name);
 }
@@ -1028,21 +1096,21 @@ function timesOf(g){
 function recTags(g){
   const tags = [];
   if (g.kind) tags.push(tag(g.kind === "staff" ? "ks" : "kg", KIND[g.kind]));
-  if (g.deny) tags.push(tag("deny", "чёрный список"));
-  if (g.nil) tags.push(tag("nil", "нет в списке"));
-  if (g.badge) tags.push(tag(g.out && g.badgeBack === "НЕТ" ? "deny" : "bd", "№ " + g.badge + (g.out ? (g.badgeBack === "НЕТ" ? " не вернул" : " ✓") : "")));
+  if (g.deny) tags.push(tag("deny", TT("чёрный список")));
+  if (g.nil) tags.push(tag("nil", TT("нет в списке")));
+  if (g.badge) tags.push(tag(g.out && g.badgeBack === "НЕТ" ? "deny" : "bd", "№ " + g.badge + (g.out ? (g.badgeBack === "НЕТ" ? TT(" не вернул") : " ✓") : "")));
   return tags;
 }
 function renderLists(){
   const box = $("lists");
   box.replaceChildren(...lists.map(l => {
     const d = document.createElement("div"); d.className = "lst";
-    const k = tag(l.kind === "staff" ? "ks" : "kg", l.kind === "staff" ? "🛠 Сотрудники" : "👥 Гости");
+    const k = tag(l.kind === "staff" ? "ks" : "kg", l.kind === "staff" ? TT("🛠 Сотрудники") : TT("👥 Гости"));
     const n = document.createElement("div"); n.className = "ln"; n.textContent = l.file + " · " + l.items.length;
     const dn = l.items.filter(e => e.deny).length;
     if (dn) n.append(tag("deny", "⛔ " + dn));
-    const b = tag(l.badge ? "bd" : "no", l.badge ? "с бейджем" : "без бейджа");
-    const del = document.createElement("button"); del.className = "ldel"; del.textContent = "🗑"; del.setAttribute("aria-label", "Удалить список");
+    const b = tag(l.badge ? "bd" : "no", l.badge ? TT("с бейджем") : TT("без бейджа"));
+    const del = document.createElement("button"); del.className = "ldel"; del.textContent = "🗑"; del.setAttribute("aria-label", TT("Удалить список"));
     del.onclick = ev => { ev.stopPropagation(); deleteList(l.id); };
     d.append(k, n, b, del);
     d.onclick = () => editList(l.id);
@@ -1050,42 +1118,42 @@ function renderLists(){
   }));
   const onHand = guests.filter(g => g.badge && g.in && !g.out).length, lost = guests.filter(g => g.badgeBack === "НЕТ").length;
   $("glInfo").textContent = lists.length
-    ? "Бейджей на руках: " + onHand + (lost ? " · не вернули: " + lost : "") + " · нажмите на список, чтобы изменить"
-    : "Списки не загружены: приложение просто записывает всех. Загрузите Guest list и/или Vendors check list (.xlsm / .xlsx).";
-  $("loadBtn").textContent = lists.length ? "➕ Добавить ещё список" : "📥 Загрузить список (Excel)";
+    ? TT("Бейджей на руках: ") + onHand + (lost ? TT(" · не вернули: ") + lost : "") + TT(" · нажмите на список, чтобы изменить")
+    : TT("Списки не загружены: приложение просто записывает всех. Загрузите Guest list и/или Vendors check list (.xlsm / .xlsx).");
+  $("loadBtn").textContent = lists.length ? TT("➕ Добавить ещё список") : TT("📥 Загрузить список (Excel)");
 }
 async function deleteList(id){
   const l = listById(id); if (!l) return;
   const came = l.items.filter(e => recsOf(e).some(g => g.in)).length;
-  const c = await ask("Вы действительно хотите удалить этот список?", "«" + l.file + "» · " + l.items.length + " человек" + (came ? "\nУже пришли: " + came + " — их записи входа/выхода останутся." : ""),
-    [{ label: "Да, удалить", value: 1, cls: "red" }, { label: "Нет", value: 0, cls: "plain" }]);
+  const c = await ask(TT("Вы действительно хотите удалить этот список?"), "«" + l.file + "» · " + l.items.length + TT(" человек") + (came ? TT("\nУже пришли: ") + came + TT(" — их записи входа/выхода останутся.") : ""),
+    [{ label: TT("Да, удалить"), value: 1, cls: "red" }, { label: TT("Нет"), value: 0, cls: "plain" }]);
   if (!c.value) return;
   lists = lists.filter(x => x.id !== id);
   if (tab === "list:" + id) tab = l.kind;
   persist(); render();
-  setStatus("🗑 Список удалён: " + l.file);
+  setStatus(TT("🗑 Список удалён: ") + l.file);
 }
 async function editList(id){
   const l = listById(id); if (!l) return;
-  const r = await ask(l.file, (l.sheet ? "Лист «" + l.sheet + "» · " : "") + l.items.length + " человек\nТип: " + KIND[l.kind] + (l.badge ? " — выдаём бейдж" : " — без бейджа"), [
-    { label: "📋 Показать весь список (кто пришёл и кто нет)", value: "show", cls: "main" },
-    { label: "➕ Добавить человека в этот список", value: "add" },
-    { label: l.kind === "staff" ? "Сделать списком ГОСТЕЙ (без бейджа)" : "Сделать списком СОТРУДНИКОВ (с бейджем)", value: "kind" },
-    { label: l.badge ? "Не спрашивать бейдж" : "Спрашивать номер бейджа", value: "badge" },
-    { label: "Удалить этот список", value: "del", cls: "red" },
-    { label: "Отмена", value: 0, cls: "plain" }]);
+  const r = await ask(l.file, (l.sheet ? TT("Лист «") + l.sheet + "» · " : "") + l.items.length + TT(" человек\nТип: ") + KIND[l.kind] + (l.badge ? TT(" — выдаём бейдж") : TT(" — без бейджа")), [
+    { label: TT("📋 Показать весь список (кто пришёл и кто нет)"), value: "show", cls: "main" },
+    { label: TT("➕ Добавить человека в этот список"), value: "add" },
+    { label: l.kind === "staff" ? TT("Сделать списком ГОСТЕЙ (без бейджа)") : TT("Сделать списком СОТРУДНИКОВ (с бейджем)"), value: "kind" },
+    { label: l.badge ? TT("Не спрашивать бейдж") : TT("Спрашивать номер бейджа"), value: "badge" },
+    { label: TT("Удалить этот список"), value: "del", cls: "red" },
+    { label: TT("Отмена"), value: 0, cls: "plain" }]);
   if (r.value === "show"){ tab = "list:" + l.id; $("search").value = ""; render(); $("tabs").scrollIntoView({ behavior: "smooth" }); return; }
   if (r.value === "add"){
-    const a = await ask("Новый человек в «" + l.file + "»", "Формат как в Excel: Фамилия, Имя", [{ label: "Добавить", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }], "");
+    const a = await ask(TT("Новый человек в «") + l.file + "»", TT("Формат как в Excel: Фамилия, Имя"), [{ label: TT("Добавить"), value: 1, cls: "main" }, { label: TT("Отмена"), value: 0, cls: "plain" }], "");
     if (!a.value || !a.input) return;
     const row = l.items.reduce((m, e) => Math.max(m, e.row || 0), 1) + 1;
     l.items.push({ id: l.id + "_M" + newId(), row, name: a.input, color: "", deny: false });
-    dirty = true; persist(); tab = "list:" + l.id; render(); setStatus("✅ Добавлен в «" + l.file + "»: " + a.input); return;
+    dirty = true; persist(); tab = "list:" + l.id; render(); setStatus(TT("✅ Добавлен в «") + l.file + "»: " + a.input); return;
   }
   else if (r.value === "kind"){ l.kind = l.kind === "staff" ? "guest" : "staff"; l.badge = l.kind === "staff"; }
   else if (r.value === "badge") l.badge = !l.badge;
   else if (r.value === "del"){
-    const c = await ask("Удалить список «" + l.file + "»?", "Записи входа/выхода останутся.", [{ label: "Да, удалить", value: 1, cls: "red" }, { label: "Отмена", value: 0, cls: "plain" }]);
+    const c = await ask(TT("Удалить список «") + l.file + "»?", TT("Записи входа/выхода останутся."), [{ label: TT("Да, удалить"), value: 1, cls: "red" }, { label: TT("Отмена"), value: 0, cls: "plain" }]);
     if (!c.value) return;
     lists = lists.filter(x => x.id !== id);
     if (tab === "list:" + id) tab = l.kind;
@@ -1113,8 +1181,8 @@ function render(){
 
   $("tabs").style.display = hasStaff ? "" : "none";
   const cnt = k => guests.filter(g => recKind(g) === k && g.in).length;
-  $("tG").textContent = "👥 Гости · " + cnt("guest");
-  $("tS").textContent = "🛠 Сотрудники · " + cnt("staff");
+  $("tG").textContent = TT("👥 Гости · ") + cnt("guest");
+  $("tS").textContent = TT("🛠 Сотрудники · ") + cnt("staff");
   $("tG").classList.toggle("on", !isList && tab === "guest");
   $("tS").classList.toggle("on", !isList && tab === "staff");
 
@@ -1131,20 +1199,20 @@ function render(){
       return d;
     });
     if (!items.length){ const e = document.createElement("div"); e.className = "empty";
-      e.textContent = q ? "Никого не найдено." : (hasStaff && kind === "staff" ? "Сотрудники ещё не приходили." : "Пока никто не пришёл. Отсканируйте первого гостя."); items = [e]; }
+      e.textContent = q ? TT("Никого не найдено.") : (hasStaff && kind === "staff" ? TT("Сотрудники ещё не приходили.") : TT("Пока никто не пришёл. Отсканируйте первого гостя.")); items = [e]; }
   } else {
     const bar = document.createElement("div"); bar.className = "lbar";
-    const t = document.createElement("span"); t.textContent = "📋 Весь список: " + showLst.file;
-    const x = document.createElement("button"); x.textContent = "✕ Закрыть"; x.onclick = () => { tab = showLst.kind; $("search").value = ""; render(); };
+    const t = document.createElement("span"); t.textContent = TT("📋 Весь список: ") + showLst.file;
+    const x = document.createElement("button"); x.textContent = TT("✕ Закрыть"); x.onclick = () => { tab = showLst.kind; $("search").value = ""; render(); };
     bar.append(t, x);
     let rows = showLst.items.map(e => ({ e, l: showLst }));
     if (q) rows = rows.filter(r => norm(r.e.name).includes(q));
     items = [bar].concat(rows.map(({ e }) => {
       const rs = recsOf(e), last = rs[rs.length - 1], inside = rs.some(g => g.in && !g.out);
       const tags = [];
-      if (e.deny) tags.push(tag("deny", "чёрный список"));
-      if (!rs.some(g => g.in) && !e.deny) tags.push(tag("no", "не пришёл"));
-      if (last && last.badge) tags.push(tag(last.out && last.badgeBack === "НЕТ" ? "deny" : "bd", "№ " + last.badge + (last.out ? (last.badgeBack === "НЕТ" ? " не вернул" : " ✓") : "")));
+      if (e.deny) tags.push(tag("deny", TT("чёрный список")));
+      if (!rs.some(g => g.in) && !e.deny) tags.push(tag("no", TT("не пришёл")));
+      if (last && last.badge) tags.push(tag(last.out && last.badgeBack === "НЕТ" ? "deny" : "bd", "№ " + last.badge + (last.out ? (last.badgeBack === "НЕТ" ? TT(" не вернул") : " ✓") : "")));
       const d = row(e.name, timesOf(last), { inside, deny: e.deny, color: e.color, tags });
       d.onclick = () => editEntry(e.id);
       return d;
@@ -1152,7 +1220,7 @@ function render(){
   }
   const more = items.length > 300 ? items.length - 300 : 0;
   list.replaceChildren(...items.slice(0, 300));
-  if (more){ const e = document.createElement("div"); e.className = "empty"; e.textContent = "…и ещё " + more + ". Используйте поиск."; list.append(e); }
+  if (more){ const e = document.createElement("div"); e.className = "empty"; e.textContent = TT("…и ещё ") + more + TT(". Используйте поиск."); list.append(e); }
 }
 $("search").addEventListener("input", render);
 $("tG").addEventListener("click", () => { tab = "guest"; render(); });
@@ -1161,47 +1229,47 @@ $("tS").addEventListener("click", () => { tab = "staff"; render(); });
 
 async function editGuest(id){
   const g = guests.find(x => x.id === id); if (!g) return;
-  const info = (g.kind ? KIND[g.kind] + "\n" : "") + (g.in ? "Вход: " + g.in : "Без входа") + "\n" + (g.out ? "Выход: " + g.out : "Ещё внутри") +
-    (g.badge ? "\nБейдж № " + g.badge + (g.out ? (g.badgeBack === "НЕТ" ? " — НЕ вернул" : " — вернул") : " — на руках") : "") +
-    (g.scanned && g.scanned !== g.name ? "\nОтсканировано: " + g.scanned : "");
-  const btns = [{ label: "Сохранить имя", value: "save", cls: "main" }];
-  if (g.in && !g.out) btns.push({ label: "⬆ Отметить выход сейчас", value: "out", cls: "blue" });
-  if (g.out && g.in) btns.push({ label: "Отменить выход (снова внутри)", value: "unout" });
-  if (g.out && g.badge && g.badgeBack === "НЕТ") btns.push({ label: "✅ Бейдж № " + g.badge + " вернули позже", value: "back" });
-  btns.push({ label: g.badge ? "Изменить номер бейджа" : "Добавить номер бейджа", value: "badge" });
-  btns.push({ label: "Удалить запись", value: "del", cls: "red" }, { label: "Отмена", value: 0, cls: "plain" });
-  const r = await ask("Запись", info, btns, g.name);
-  if (r.value === "save" && r.input){ g.name = r.input; done("Имя исправлено: " + g.name); }
+  const info = (g.kind ? KIND[g.kind] + "\n" : "") + (g.in ? TT("Вход: ") + g.in : TT("Без входа")) + "\n" + (g.out ? TT("Выход: ") + g.out : TT("Ещё внутри")) +
+    (g.badge ? TT("\nБейдж № ") + g.badge + (g.out ? (g.badgeBack === "НЕТ" ? TT(" — НЕ вернул") : TT(" — вернул")) : TT(" — на руках")) : "") +
+    (g.scanned && g.scanned !== g.name ? TT("\nОтсканировано: ") + g.scanned : "");
+  const btns = [{ label: TT("Сохранить имя"), value: "save", cls: "main" }];
+  if (g.in && !g.out) btns.push({ label: TT("⬆ Отметить выход сейчас"), value: "out", cls: "blue" });
+  if (g.out && g.in) btns.push({ label: TT("Отменить выход (снова внутри)"), value: "unout" });
+  if (g.out && g.badge && g.badgeBack === "НЕТ") btns.push({ label: TT("✅ Бейдж № ") + g.badge + TT(" вернули позже"), value: "back" });
+  btns.push({ label: g.badge ? TT("Изменить номер бейджа") : TT("Добавить номер бейджа"), value: "badge" });
+  btns.push({ label: TT("Удалить запись"), value: "del", cls: "red" }, { label: TT("Отмена"), value: 0, cls: "plain" });
+  const r = await ask(TT("Запись"), info, btns, g.name);
+  if (r.value === "save" && r.input){ g.name = r.input; done(TT("Имя исправлено: ") + g.name); }
   else if (r.value === "out") await checkout(g);
-  else if (r.value === "unout"){ g.out = ""; g.badgeBack = ""; done("Выход отменён: " + g.name); }
-  else if (r.value === "back"){ g.badgeBack = stamp(); done("✅ Бейдж № " + g.badge + " возвращён: " + g.name); }
+  else if (r.value === "unout"){ g.out = ""; g.badgeBack = ""; done(TT("Выход отменён: ") + g.name); }
+  else if (r.value === "back"){ g.badgeBack = stamp(); done(TT("✅ Бейдж № ") + g.badge + TT(" возвращён: ") + g.name); }
   else if (r.value === "badge"){
-    const b = await ask("Номер бейджа", g.name, [{ label: "Сохранить", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }], g.badge || "", { numeric: true });
-    if (b.value){ g.badge = b.input; done("Бейдж сохранён: " + g.name + (g.badge ? " № " + g.badge : "")); }
+    const b = await ask(TT("Номер бейджа"), g.name, [{ label: TT("Сохранить"), value: 1, cls: "main" }, { label: TT("Отмена"), value: 0, cls: "plain" }], g.badge || "", { numeric: true });
+    if (b.value){ g.badge = b.input; done(TT("Бейдж сохранён: ") + g.name + (g.badge ? " № " + g.badge : "")); }
   }
   else if (r.value === "del"){
-    const c = await ask("Удалить «" + g.name + "»?", "", [{ label: "Да, удалить", value: 1, cls: "red" }, { label: "Отмена", value: 0, cls: "plain" }]);
-    if (c.value){ guests = guests.filter(x => x.id !== id); done("Удалено: " + g.name); }
+    const c = await ask(TT("Удалить «") + g.name + "»?", "", [{ label: TT("Да, удалить"), value: 1, cls: "red" }, { label: TT("Отмена"), value: 0, cls: "plain" }]);
+    if (c.value){ guests = guests.filter(x => x.id !== id); done(TT("Удалено: ") + g.name); }
   }
 }
 async function editEntry(id){
   const hit = entryById(id); if (!hit) return;
   const e = hit.e, l = hit.l;
   const rs = recsOf(e).filter(g => g.in);
-  const info = KIND[l.kind] + " · " + l.file + " · строка " + e.row + (rs.length ? "\n" + rs.map(g => "Вход " + hm(g.in) + (g.out ? ", выход " + hm(g.out) : " — внутри") + (g.badge ? ", бейдж " + g.badge : "")).join("\n") : "\nЕщё не приходил");
+  const info = KIND[l.kind] + " · " + l.file + TT(" · строка ") + e.row + (rs.length ? "\n" + rs.map(g => TT("Вход ") + hm(g.in) + (g.out ? TT(", выход ") + hm(g.out) : TT(" — внутри")) + (g.badge ? TT(", бейдж ") + g.badge : "")).join("\n") : TT("\nЕщё не приходил"));
   const btns = [];
-  if (!rs.some(g => !g.out)) btns.push({ label: "⬇ Отметить вход вручную", value: "in", cls: "main" });
-  btns.push({ label: e.deny ? "Убрать из чёрного списка" : "⛔ Добавить в чёрный список", value: "deny", cls: e.deny ? "" : "red" });
-  btns.push({ label: "🗑 Убрать из списка", value: "rm" });
-  btns.push({ label: "Отмена", value: 0, cls: "plain" });
+  if (!rs.some(g => !g.out)) btns.push({ label: TT("⬇ Отметить вход вручную"), value: "in", cls: "main" });
+  btns.push({ label: e.deny ? TT("Убрать из чёрного списка") : TT("⛔ Добавить в чёрный список"), value: "deny", cls: e.deny ? "" : "red" });
+  btns.push({ label: TT("🗑 Убрать из списка"), value: "rm" });
+  btns.push({ label: TT("Отмена"), value: 0, cls: "plain" });
   const r = await ask(e.name, info, btns, null, { danger: e.deny });
   if (r.value === "rm"){
-    const c = await ask("Убрать «" + e.name + "» из списка?", "Записи входа/выхода останутся.", [{ label: "Да, убрать", value: 1, cls: "red" }, { label: "Отмена", value: 0, cls: "plain" }]);
-    if (c.value){ l.items = l.items.filter(x => x.id !== e.id); done("Убран из списка: " + e.name); }
+    const c = await ask(TT("Убрать «") + e.name + TT("» из списка?"), TT("Записи входа/выхода останутся."), [{ label: TT("Да, убрать"), value: 1, cls: "red" }, { label: TT("Отмена"), value: 0, cls: "plain" }]);
+    if (c.value){ l.items = l.items.filter(x => x.id !== e.id); done(TT("Убран из списка: ") + e.name); }
     return;
   }
   if (r.value === "in") await admit(e.name, hit);
-  else if (r.value === "deny"){ e.deny = !e.deny; done((e.deny ? "⛔ В чёрном списке: " : "Убран из чёрного списка: ") + e.name); }
+  else if (r.value === "deny"){ e.deny = !e.deny; done((e.deny ? TT("⛔ В чёрном списке: ") : TT("Убран из чёрного списка: ")) + e.name); }
 }
 
 /* ===== ZIP / Excel без интернета ===== */
@@ -1265,7 +1333,7 @@ async function readZip(buf){
   const dv = new DataView(buf), u8 = new Uint8Array(buf);
   let e = -1;
   for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 70000); i--) if (dv.getUint32(i, true) === 0x06054b50){ e = i; break; }
-  if (e < 0) throw new Error("это не Excel-файл");
+  if (e < 0) throw new Error(TT("это не Excel-файл"));
   const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true);
   const dec = new TextDecoder(), files = {};
   for (let k = 0; k < n; k++){
@@ -1280,7 +1348,7 @@ async function readZip(buf){
     const f = files[name] || files[Object.keys(files).find(k => k.toLowerCase() === name.toLowerCase())];
     if (!f) return null;
     if (f.method === 0) return dec.decode(f.data);
-    if (!window.DecompressionStream) throw new Error("обновите Chrome, чтобы открыть Excel");
+    if (!window.DecompressionStream) throw new Error(TT("обновите Chrome, чтобы открыть Excel"));
     const out = await new Response(new Blob([f.data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer();
     return dec.decode(out);
   };
@@ -1307,7 +1375,7 @@ async function parseExcel(buf){
   const sheets = kids(wb, "sheet").map(s => ({ name: s.getAttribute("name"),
     target: relMap[s.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || s.getAttribute("r:id")] }));
   const pick = sheets.find(s => /guest|гост|vendor|list|спис/i.test(s.name) && !/^scan$/i.test(s.name)) || sheets.find(s => !/^scan$/i.test(s.name)) || sheets[0];
-  if (!pick) throw new Error("в файле нет листов");
+  if (!pick) throw new Error(TT("в файле нет листов"));
   const path = pick.target.startsWith("/") ? pick.target.slice(1) : "xl/" + pick.target.replace(/^\.\//, "");
   const sst = xml(await get("xl/sharedStrings.xml") || "<sst/>");
   const strings = kids(sst, "si").map(si => kids(si, "t").map(t => t.textContent).join(""));
@@ -1344,7 +1412,7 @@ async function parseExcel(buf){
     });
     return { n: +r.getAttribute("r"), cells };
   });
-  if (!rows.length) throw new Error("лист «" + pick.name + "» пустой");
+  if (!rows.length) throw new Error(TT("лист «") + pick.name + TT("» пустой"));
   let col = 0, first = 0;
   const head = rows[0].cells;
   const hc = Object.keys(head).find(k => /name|имя|фамил|ady|familiýa/i.test(head[k].val));
@@ -1370,25 +1438,25 @@ $("loadBtn").addEventListener("click", () => $("glFile").click());
 $("glFile").addEventListener("change", async ev => {
   const f = ev.target.files[0]; ev.target.value = "";
   if (!f) return;
-  setStatus("Читаю " + f.name + "…");
+  setStatus(TT("Читаю ") + f.name + "…");
   let res;
   try {
     const buf = await f.arrayBuffer();
     const u = new Uint8Array(buf, 0, 2);
     res = u[0] === 0x50 && u[1] === 0x4B ? await parseExcel(buf) : parseText(new TextDecoder().decode(buf));
-  } catch (err){ setStatus("⚠️ Не получилось прочитать файл: " + err.message); return; }
-  if (!res.items.length){ setStatus("⚠️ В файле не нашлось имён."); return; }
+  } catch (err){ setStatus(TT("⚠️ Не получилось прочитать файл: ") + err.message); return; }
+  if (!res.items.length){ setStatus(TT("⚠️ В файле не нашлось имён.")); return; }
   // тип списка: Vendors / сотрудники / есть колонка «Badge» → сотрудники с бейджем; иначе гости
   const staff = /vendor|staff|employ|worker|сотруд|персонал|ishgar|işgär/i.test(f.name) || !!res.badgeHint;
   const file = f.name.replace(/\.(xlsx|xlsm|xls|csv|txt)$/i, "").replace(/[_]+/g, " ");
   const same = lists.find(l => l.file === file);
   const dn = res.items.filter(x => x.deny).length;
-  const r = await ask("Добавить список?", f.name + (res.sheet ? " · лист «" + res.sheet + "»" : "") + "\nЛюдей: " + res.items.length + (dn ? "\n⛔ Чёрный список (красные): " + dn : "") +
-    "\nТип: " + (staff ? "🛠 СОТРУДНИКИ — выдаём бейдж" : "👥 ГОСТИ — без бейджа") +
-    "\n\nПервые: " + res.items.slice(0, 3).map(x => x.name).join("; ") + (same ? "\n\nСписок «" + file + "» уже загружен — он будет заменён." : ""),
-    [{ label: staff ? "Загрузить как СОТРУДНИКОВ (с бейджем)" : "Загрузить как ГОСТЕЙ (без бейджа)", value: staff ? "staff" : "guest", cls: "main" },
-     { label: staff ? "Нет, это гости (без бейджа)" : "Нет, это сотрудники (с бейджем)", value: staff ? "guest" : "staff" },
-     { label: "Отмена", value: 0, cls: "plain" }]);
+  const r = await ask(TT("Добавить список?"), f.name + (res.sheet ? TT(" · лист «") + res.sheet + "»" : "") + TT("\nЛюдей: ") + res.items.length + (dn ? TT("\n⛔ Чёрный список (красные): ") + dn : "") +
+    TT("\nТип: ") + (staff ? TT("🛠 СОТРУДНИКИ — выдаём бейдж") : TT("👥 ГОСТИ — без бейджа")) +
+    TT("\n\nПервые: ") + res.items.slice(0, 3).map(x => x.name).join("; ") + (same ? TT("\n\nСписок «") + file + TT("» уже загружен — он будет заменён.") : ""),
+    [{ label: staff ? TT("Загрузить как СОТРУДНИКОВ (с бейджем)") : TT("Загрузить как ГОСТЕЙ (без бейджа)"), value: staff ? "staff" : "guest", cls: "main" },
+     { label: staff ? TT("Нет, это гости (без бейджа)") : TT("Нет, это сотрудники (с бейджем)"), value: staff ? "guest" : "staff" },
+     { label: TT("Отмена"), value: 0, cls: "plain" }]);
   if (!r.value){ setStatus(""); return; }
   const id = same ? same.id : "L" + newId();
   const lst = { id, file, sheet: res.sheet, kind: r.value, badge: r.value === "staff",
@@ -1401,7 +1469,7 @@ $("glFile").addEventListener("change", async ev => {
     if (m){ g.listId = m.id; g.lst = id; g.kind = lst.kind; g.deny = m.deny; g.color = m.color; g.nil = false; }
   });
   persist(); tab = lst.kind; render();
-  setStatus("✅ Загружен: " + file + " — " + lst.items.length + " (" + KIND[lst.kind].toLowerCase() + (lst.kind === "staff" ? "и" : "и") + ")" + (dn ? ", в чёрном списке " + dn : ""));
+  setStatus(TT("✅ Загружен: ") + file + " — " + lst.items.length + " (" + (lst.kind === "staff" ? TT("сотрудники") : TT("гости")) + ")" + (dn ? TT(", в чёрном списке ") + dn : ""));
 });
 
 /* ===== ВЫГРУЗКА: гости, сотрудники или всё — отдельными файлами ===== */
@@ -1442,14 +1510,14 @@ function buildXlsx(kind){ const x = buildSheets(kind); return { blob: makeXlsx(x
 async function deliver(x, how){
   const file = new File([x.blob], x.fname, { type: x.blob.type });
   if (how === "share"){
-    try { await navigator.share({ files: [file], title: x.fname }); setStatus("✅ Отправлено: " + x.fname); return true; }
-    catch (e){ if (e.name !== "AbortError") setStatus("Не получилось отправить: " + e.message + ". Попробуйте «Сохранить в телефон»."); return false; }
+    try { await navigator.share({ files: [file], title: x.fname }); setStatus(TT("✅ Отправлено: ") + x.fname); return true; }
+    catch (e){ if (e.name !== "AbortError") setStatus(TT("Не получилось отправить: ") + e.message + TT(". Попробуйте «Сохранить в телефон».")); return false; }
   }
   const a = document.createElement("a");
   a.href = URL.createObjectURL(x.blob); a.download = x.fname;
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-  setStatus("✅ Сохранено в «Загрузки»: " + x.fname);
+  setStatus(TT("✅ Сохранено в «Загрузки»: ") + x.fname);
   return true;
 }
 /* ===== внизу: Excel-файлы «Guest list» и «Vendors check list» с меню ⋮ ===== */
@@ -1463,8 +1531,8 @@ function renderXl(){
     const d = document.createElement("div"); d.className = "xrow";
     const ic = document.createElement("span"); ic.className = "xic"; ic.textContent = "X";
     const t = document.createElement("span"); t.className = "xt"; t.textContent = title;
-    const c = document.createElement("span"); c.className = "xc"; c.textContent = "пришло " + n;
-    const m = document.createElement("button"); m.className = "xm"; m.textContent = "⋮"; m.setAttribute("aria-label", "Меню");
+    const c = document.createElement("span"); c.className = "xc"; c.textContent = TT("пришло ") + n;
+    const m = document.createElement("button"); m.className = "xm"; m.textContent = "⋮"; m.setAttribute("aria-label", TT("Меню"));
     d.append(ic, t, c, m);
     m.onclick = ev => { ev.stopPropagation(); xlMenu(kind, title); };
     d.onclick = () => openXl(kind, title);
@@ -1490,7 +1558,7 @@ window.addEventListener("resize", placeFab);
 function setPanel(open){
   const f = document.querySelector("footer");
   f.classList.toggle("open", open);
-  $("gripTxt").textContent = open ? "▼ свернуть" : "Excel · бейджи · новый ивент ▲";
+  $("gripTxt").textContent = open ? TT("▼ свернуть") : TT("Excel · бейджи · новый ивент ▲");
   store("panel", open ? "1" : "0");
   setTimeout(placeFab, 280);
 }
@@ -1510,10 +1578,10 @@ async function xlMenu(kind, title){
   const share = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob(["x"])], "t.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })] }));
   const lost = kind !== "guest" ? guests.filter(g => (kind === "all" || recKind(g) === kind) && g.badge && (g.badgeBack === "НЕТ" || (g.in && !g.out))).length : 0;
   const lst = lists.find(l => l.kind === kind);
-  const btns = [{ label: "👁 Открыть Excel", value: "view", cls: "main" }, { label: "💾 Скачать Excel", value: "save" }];
-  if (share) btns.push({ label: "📤 Отправить Excel (Telegram, IMO, почта…)", value: "share" });
-  btns.push({ label: "Отмена", value: 0, cls: "plain" });
-  const r = await ask(title, (kind === "staff" ? "Сотрудники" : kind === "guest" ? "Гости" : "Все записи") + (lost ? "\n⚠️ Бейджей ещё не вернули: " + lost : ""), btns);
+  const btns = [{ label: TT("👁 Открыть Excel"), value: "view", cls: "main" }, { label: TT("💾 Скачать Excel"), value: "save" }];
+  if (share) btns.push({ label: TT("📤 Отправить Excel (Telegram, IMO, почта…)"), value: "share" });
+  btns.push({ label: TT("Отмена"), value: 0, cls: "plain" });
+  const r = await ask(title, (kind === "staff" ? TT("Сотрудники") : kind === "guest" ? TT("Гости") : TT("Все записи")) + (lost ? TT("\n⚠️ Бейджей ещё не вернули: ") + lost : ""), btns);
   if (r.value === "view") return openXl(kind, title);
   if (r.value === "save" || r.value === "share"){
     const ok = await deliver(buildXlsx(kind), r.value);
@@ -1553,7 +1621,7 @@ function drawXl(){
   });
   if (sh.rows.length === 1){
     const tr = document.createElement("tr"); const td = document.createElement("td"); td.colSpan = sh.rows[0].length + 1; td.className = "xvempty";
-    td.textContent = "Пока пусто — здесь появятся те, кто пришёл."; tr.append(td); tbl.append(tr);
+    td.textContent = TT("Пока пусто — здесь появятся те, кто пришёл."); tr.append(td); tbl.append(tr);
   }
   $("xvGrid").replaceChildren(tbl);
   $("xvGrid").scrollTo(0, 0);
@@ -1562,7 +1630,7 @@ function drawXl(){
     b.onclick = () => { xv.sheet = i; drawXl(); };
     return b;
   }));
-  $("xvInfo").textContent = (sh.rows.length - 1) + " строк";
+  $("xvInfo").textContent = (sh.rows.length - 1) + TT(" строк");
 }
 $("xvClose").addEventListener("click", () => history.back());
 $("xvMenu").addEventListener("click", () => { const k = xv.kind, t = xv.title; xlMenu(k, t).then(() => {}); });
@@ -1572,52 +1640,52 @@ window.addEventListener("popstate", () => closeXl());
 async function returnBadge(num){
   const g = guests.find(x => x.badge === num && x.in && !x.out);
   if (g){
-    const r = await ask("Бейдж № " + num, g.name + (g.kind ? " · " + KIND[g.kind] : "") + "\nВошёл в " + hm(g.in) + "\n\nБейдж вернул — отметить выход?",
-      [{ label: "✅ Бейдж № " + num + " вернул — вышел", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }]);
+    const r = await ask(TT("Бейдж № ") + num, g.name + (g.kind ? " · " + KIND[g.kind] : "") + TT("\nВошёл в ") + hm(g.in) + TT("\n\nБейдж вернул — отметить выход?"),
+      [{ label: TT("✅ Бейдж № ") + num + TT(" вернул — вышел"), value: 1, cls: "main" }, { label: TT("Отмена"), value: 0, cls: "plain" }]);
     if (!r.value) return;
     g.badgeBack = stamp(); g.out = stamp();
-    done("✅ Бейдж № " + num + " возвращён · вышел: " + g.name);
+    done(TT("✅ Бейдж № ") + num + TT(" возвращён · вышел: ") + g.name);
     return;
   }
   const late = guests.filter(x => x.badge === num && x.badgeBack === "НЕТ").pop();
   if (late){
-    const r = await ask("Бейдж № " + num, late.name + "\nУшёл в " + hm(late.out) + " и не вернул бейдж.\nВернул сейчас?",
-      [{ label: "✅ Да, бейдж вернул", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }]);
-    if (r.value){ late.badgeBack = stamp(); done("✅ Бейдж № " + num + " возвращён: " + late.name); }
+    const r = await ask(TT("Бейдж № ") + num, late.name + TT("\nУшёл в ") + hm(late.out) + TT(" и не вернул бейдж.\nВернул сейчас?"),
+      [{ label: TT("✅ Да, бейдж вернул"), value: 1, cls: "main" }, { label: TT("Отмена"), value: 0, cls: "plain" }]);
+    if (r.value){ late.badgeBack = stamp(); done(TT("✅ Бейдж № ") + num + TT(" возвращён: ") + late.name); }
     return;
   }
-  await ask("Бейдж № " + num + " не найден", "Сейчас ни у кого нет бейджа с этим номером.", [{ label: "OK", value: 0, cls: "plain" }]);
+  await ask(TT("Бейдж № ") + num + TT(" не найден"), TT("Сейчас ни у кого нет бейджа с этим номером."), [{ label: "OK", value: 0, cls: "plain" }]);
   $("text").value = "";
 }
 $("badgeBtn").addEventListener("click", async () => {
-  const r = await ask("🔖 Вернуть бейдж", "Введите номер бейджа:", [{ label: "Дальше", value: 1, cls: "main" }, { label: "Отмена", value: 0, cls: "plain" }], "", { numeric: true });
+  const r = await ask(TT("🔖 Вернуть бейдж"), TT("Введите номер бейджа:"), [{ label: TT("Дальше"), value: 1, cls: "main" }, { label: TT("Отмена"), value: 0, cls: "plain" }], "", { numeric: true });
   if (r.value && r.input) await returnBadge(r.input.replace(/\D/g, ""));
 });
 
 $("clearBtn").addEventListener("click", async () => {
-  if (!guests.length && !lists.length){ setStatus("Всё уже пусто."); return; }
-  const warn = dirty ? "⚠️ Последние изменения ещё НЕ выгружены в Excel!\nСначала нажмите «Скачать Excel»." : "Excel уже выгружен.";
+  if (!guests.length && !lists.length){ setStatus(TT("Всё уже пусто.")); return; }
+  const warn = dirty ? TT("⚠️ Последние изменения ещё НЕ выгружены в Excel!\nСначала нажмите «Скачать Excel».") : TT("Excel уже выгружен.");
   const btns = [];
-  if (guests.length) btns.push({ label: "Удалить записи (списки оставить)", value: "rec", cls: "red" });
-  if (lists.length) btns.push({ label: "Удалить всё: записи и списки", value: "all", cls: "red" });
-  btns.push({ label: "Отмена", value: 0, cls: "plain" });
-  const r = await ask("Начать новый ивент?", "Записей: " + guests.length + (lists.length ? " · списков: " + lists.length : "") + "\n" + warn, btns);
+  if (guests.length) btns.push({ label: TT("Удалить записи (списки оставить)"), value: "rec", cls: "red" });
+  if (lists.length) btns.push({ label: TT("Удалить всё: записи и списки"), value: "all", cls: "red" });
+  btns.push({ label: TT("Отмена"), value: 0, cls: "plain" });
+  const r = await ask(TT("Начать новый ивент?"), TT("Записей: ") + guests.length + (lists.length ? TT(" · списков: ") + lists.length : "") + "\n" + warn, btns);
   if (!r.value) return;
   if (dirty && guests.length){
-    const r2 = await ask("Точно удалить без Excel?", "Восстановить будет невозможно.",
-      [{ label: "Да, удалить", value: 1, cls: "red" }, { label: "Нет, сначала скачаю", value: 0, cls: "plain" }]);
+    const r2 = await ask(TT("Точно удалить без Excel?"), TT("Восстановить будет невозможно."),
+      [{ label: TT("Да, удалить"), value: 1, cls: "red" }, { label: TT("Нет, сначала скачаю"), value: 0, cls: "plain" }]);
     if (!r2.value) return;
   }
   guests = [];
   if (r.value === "all") lists = [];
   dirty = false; persist(); tab = "guest"; render();
-  setStatus("Очищено. Можно начинать новый ивент.");
+  setStatus(TT("Очищено. Можно начинать новый ивент."));
 });
 
 /* ===== работа без интернета ===== */
 async function checkOffline(){
   const L = $("link");
-  if (!("serviceWorker" in navigator) || !window.caches){ L.className = "bad"; L.textContent = "● Этот браузер не умеет работать без интернета — откройте в Chrome"; return; }
+  if (!("serviceWorker" in navigator) || !window.caches){ L.className = "bad"; L.textContent = TT("● Этот браузер не умеет работать без интернета — откройте в Chrome"); return; }
   try {
     const keys = await caches.keys();
     const name = keys.filter(k => k.startsWith("guestcheck-")).sort().pop();
@@ -1625,9 +1693,9 @@ async function checkOffline(){
     const need = ["lib/tesseract.min.js", "lib/worker.min.js", "lib/core/tesseract-core-simd-lstm.wasm.js", "lib/core/tesseract-core-lstm.wasm.js", "lib/lang/eng.traineddata.gz", "index.html"];
     let ok = 0;
     if (c) for (const f of need) if (await c.match(new URL(f, location.href).href, { ignoreSearch: true })) ok++;
-    if (ok === need.length){ L.className = "ok"; L.textContent = "● Готово к работе без интернета · данные хранятся в телефоне"; return true; }
-    L.className = "bad"; L.textContent = "● Загружаю файлы для работы без интернета… " + ok + "/" + need.length + " (не закрывайте)";
-  } catch (e){ L.className = "bad"; L.textContent = "● Проверка не удалась: " + e.message; }
+    if (ok === need.length){ L.className = "ok"; L.textContent = TT("● Готово к работе без интернета · данные хранятся в телефоне"); return true; }
+    L.className = "bad"; L.textContent = TT("● Загружаю файлы для работы без интернета… ") + ok + "/" + need.length + TT(" (не закрывайте)");
+  } catch (e){ L.className = "bad"; L.textContent = TT("● Проверка не удалась: ") + e.message; }
   return false;
 }
 if ("serviceWorker" in navigator && window.isSecureContext){
